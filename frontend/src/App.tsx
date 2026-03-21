@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import AshaWorkersPage from "./pages/AshaWorkersPage.tsx";
 import DistrictAdminPage from "./pages/DistrictAdminPage.tsx";
+import LoginPage from "./pages/LoginPage.tsx";
 import NotFound from "./pages/NotFound.tsx";
 import PatientsPage from "./pages/PatientsPage.tsx";
 
@@ -17,7 +18,7 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<Navigate to="/patients" replace />} />
+          <Route path="/" element={<LoginPage />} />
           <Route path="/patients" element={<PatientsPage />} />
           <Route path="/asha-workers" element={<AshaWorkersPage />} />
           <Route path="/district-admin" element={<DistrictAdminPage />} />
