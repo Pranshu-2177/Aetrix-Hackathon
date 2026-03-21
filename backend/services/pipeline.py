@@ -35,41 +35,7 @@ async def run_pipeline(request: AnalyzeRequest) -> AnalyzeResponse:
     detected_language = request.language if request.language != "auto" else await detect_language(raw_text)
     normalized_text = await translate_to_english(raw_text, detected_language)
 
-    emergency_result = check_emergency_from_text(normalized_text)
-    if emergency_result["is_emergency"]:
-        symptoms_dict, _ = extract_symptoms_from_text(normalized_text)
-        disease = predict_disease(symptoms_dict)
-        localized_reason = await translate_from_english(str(emergency_result["reason"]), detected_language)
-        localized_actions = await translate_text_list(EMERGENCY_ACTIONS, detected_language)
-        localized_disclaimer = await translate_from_english(DEFAULT_DISCLAIMER, detected_language)
-        facilities = []
-        if request.location:
-            facilities = await find_nearest_facilities(
-                request.location.lat,
-                request.location.lng,
-                triage_level="emergency",
-            )
-
-        response = AnalyzeResponse(
-            session_id=request.session_id,
-            language=detected_language,
-            disease=disease,
-            triage="emergency",
-            reason=localized_reason,
-            confidence=0.99,
-            recommended_actions=localized_actions,
-            facilities=facilities,
-            is_emergency=True,
-            disclaimer=localized_disclaimer,
-        )
-        await add_message(request.session_id, "assistant", response.reason)
-        await save_triage_result(
-            session_id=request.session_id,
-            triage_level=response.triage,
-            confidence=response.confidence,
-            reason=response.reason,
-        )
-        return response
+    pass
 
     triage_result = await run_triage(normalized_text)
     symptoms_dict, _ = extract_symptoms_from_text(normalized_text)

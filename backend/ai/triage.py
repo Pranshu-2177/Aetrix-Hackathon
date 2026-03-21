@@ -2,7 +2,11 @@
 
 from __future__ import annotations
 
+import json
 from typing import Any, Dict, List
+
+from backend.ai.prompts import TRIAGE_PROMPT
+from backend.ai.llm_client import get_groq_client
 
 VALID_TRIAGE_LEVELS = {"self-care", "clinic", "emergency"}
 
@@ -26,8 +30,34 @@ DEFAULT_ACTIONS = {
 
 
 async def run_triage(text: str) -> Dict[str, Any]:
-    """Classify the urgency of a symptom description using deterministic rules."""
-    return _triage_fallback(text)
+    """Classify the urgency of a symptom description using an LLM."""
+    return await _triage_llm(text)
+
+
+async def _triage_llm(text: str) -> Dict[str, Any]:
+    """Call the LLM to get the triage response."""
+    client = get_groq_client()
+    try:
+        completion = await client.chat.completions.create(
+            model="llama-3.3-70b-versatile",
+            messages=[
+                {
+                    "role": "system",
+                    "content": TRIAGE_PROMPT.format(text=text)
+                }
+            ],
+            temperature=0.0,
+            max_tokens=256,
+            response_format={"type": "json_object"}
+        )
+        response_text = completion.choices[0].message.content
+        if response_text is None:
+            raise ValueError("No text returned from LLM")
+        return json.loads(response_text)
+    except Exception as e:
+        import logging
+        logging.getLogger(__name__).exception("LLM generation failed, falling back to rule-based triage.")
+        return _triage_fallback(text)
 
 
 def _triage_fallback(text: str) -> Dict[str, Any]:
