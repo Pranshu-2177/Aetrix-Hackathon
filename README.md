@@ -1,2 +1,2 @@
 # Aetrix-Hackathon
-Team Peri PERI Fries
+Team Peri Peri Fries
