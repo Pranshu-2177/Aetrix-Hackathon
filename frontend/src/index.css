@@ -1,0 +1,106 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 170 20% 97%;
+    --foreground: 207 63% 17%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 207 63% 17%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 207 63% 17%;
+
+    --primary: 207 63% 17%;
+    --primary-foreground: 170 40% 97%;
+
+    --secondary: 170 45% 78%;
+    --secondary-foreground: 207 63% 17%;
+
+    --muted: 210 20% 96%;
+    --muted-foreground: 210 18% 45%;
+
+    --accent: 174 64% 47%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 72% 57%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 214 32% 91%;
+    --input: 214 32% 91%;
+    --ring: 174 64% 47%;
+
+    --radius: 0.75rem;
+
+    /* SwasthAI custom tokens */
+    --navy: 207 63% 17%;
+    --navy-light: 209 52% 23%;
+    --navy-lighter: 210 45% 31%;
+    --teal: 174 64% 47%;
+    --teal-dark: 175 71% 36%;
+    --teal-light: 152 55% 77%;
+    --teal-lightest: 162 76% 94%;
+    --text-secondary: 210 18% 42%;
+    --text-muted: 215 20% 65%;
+    --emergency: 0 72% 57%;
+    --emergency-light: 0 86% 92%;
+    --warning: 28 83% 57%;
+    --warning-light: 36 97% 89%;
+    --success: 145 45% 43%;
+    --success-light: 120 60% 87%;
+
+    --gradient-hero: linear-gradient(135deg, hsl(207 63% 17%) 0%, hsl(209 52% 23%) 50%, hsl(174 64% 47%) 100%);
+    --gradient-cta: linear-gradient(90deg, hsl(174 64% 47%), hsl(175 71% 36%));
+    --shadow-teal: 0 8px 32px hsla(174, 64%, 47%, 0.15);
+
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 240 5.3% 26.1%;
+    --sidebar-primary: 240 5.9% 10%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 240 4.8% 95.9%;
+    --sidebar-accent-foreground: 240 5.9% 10%;
+    --sidebar-border: 220 13% 91%;
+    --sidebar-ring: 174 64% 47%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-heading;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+  .text-pretty {
+    text-wrap: pretty;
+  }
+  .gradient-hero {
+    background: var(--gradient-hero);
+  }
+  .gradient-cta {
+    background: var(--gradient-cta);
+  }
+  .shadow-teal {
+    box-shadow: var(--shadow-teal);
+  }
+  .glass {
+    background: hsla(0, 0%, 100%, 0.8);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid hsla(214, 32%, 91%, 0.5);
+  }
+}

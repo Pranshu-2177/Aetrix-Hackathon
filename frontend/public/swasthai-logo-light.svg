@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 100" fill="none">
+  <!-- Shield -->
+  <g transform="translate(10, 5) scale(0.9)">
+    <!-- Shield shape - left half (teal) -->
+    <path d="M50 5 L50 95 C50 95 10 80 10 45 L10 15 C10 12 12 10 15 10 L50 5Z" fill="#2EBFA8"/>
+    <!-- Shield shape - right half (white for dark backgrounds) -->
+    <path d="M50 5 L50 95 C50 95 90 80 90 45 L90 15 C90 12 88 10 85 10 L50 5Z" fill="#FFFFFF"/>
+    
+    <!-- Medical cross (navy color to contrast with white half) -->
+    <rect x="38" y="48" width="24" height="8" rx="1" fill="#1B3A5C"/>
+    <rect x="46" y="40" width="8" height="24" rx="1" fill="#1B3A5C"/>
+    
+    <!-- ECG heartbeat line (navy color to contrast with white half) -->
+    <polyline points="20,30 35,30 40,18 45,38 50,25 55,32 60,30 80,30" 
+              stroke="#1B3A5C" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+    
+    <!-- Circuit nodes on left side (lighter teal) -->
+    <circle cx="22" cy="55" r="3" fill="#A7F3E8"/>
+    <circle cx="18" cy="70" r="2.5" fill="#A7F3E8"/>
+    <circle cx="30" cy="65" r="2" fill="#A7F3E8"/>
+    <line x1="22" y1="55" x2="30" y2="65" stroke="#A7F3E8" stroke-width="1.2"/>
+    <line x1="18" y1="70" x2="30" y2="65" stroke="#A7F3E8" stroke-width="1.2"/>
+    <circle cx="25" cy="78" r="2" fill="#A7F3E8"/>
+    <line x1="18" y1="70" x2="25" y2="78" stroke="#A7F3E8" stroke-width="1.2"/>
+  </g>
+  
+  <!-- Text "SwasthAI" (White + Teal for dark background) -->
+  <text x="115" y="67" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="48" font-weight="700" letter-spacing="-0.5">
+    <tspan fill="#FFFFFF">Swasth</tspan><tspan fill="#2EBFA8">AI</tspan>
+  </text>
+</svg>
