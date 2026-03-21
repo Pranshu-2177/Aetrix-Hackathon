@@ -1,0 +1,44 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+dist/
+build/
+*.egg
+venv/
+.venv/
+env/
+.env
+
+# Node / JS
+node_modules/
+dist-ssr/
+*.local
+.npm
+.eslintcache
+.stylelintcache
+.node_repl_history
+yarn-error.log*
+yarn-debug.log*
+npm-debug.log*
+pnpm-debug.log*
+bun.lockb
+
+# Vite
+dist/
+.vite/
+
+# Audio/Media
+backend/static/audio/*.mp3
+*.log
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db

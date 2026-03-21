@@ -40,16 +40,49 @@ SwasthAI enables users to:
 | **🌐 Website** | Landing page showcasing SwasthAI features + embedded AI chatbot |
 | **📱 WhatsApp Bot** | Single connected phone number — users message the bot directly on WhatsApp |
 
-**System Outputs:**
+**Target Outputs and Current Status:**
 
-- ✅ Self-care advice & home remedies
-- 🏥 Clinic recommendation
-- 🚨 Emergency alert with ambulance call (`108`)
-- 📍 Nearby hospital suggestions (GPS-based)
-- 🔊 AI voice response (multilingual)
-- 📋 Patient summary report
+- ✅ Self-care triage response
+- ✅ Clinic triage response
+- ✅ Emergency triage response with `108` guidance
+- ❌ Nearby hospital suggestions (GPS-based)
+- ❌ AI voice response (multilingual)
+- ❌ Patient summary report
 
-Additionally, anonymous interaction data is stored to generate **population health analytics**.
+Anonymous analytics storage is also part of the target architecture, but it is not implemented yet.
+
+---
+
+## Current Implementation Status
+
+**As of March 21, 2026**
+
+**Legend**
+
+- ✅ COMPLETED
+- ⚠ PARTIAL
+- ❌ NOT IMPLEMENTED
+
+| Area | Status | Reality |
+|---|---|---|
+| FastAPI backend app | ✅ | Working backend entrypoint exists |
+| `POST /analyze` | ✅ | Working MVP endpoint for text symptom analysis |
+| Request validation | ✅ | Pydantic request model validates input |
+| Response schema | ✅ | Structured JSON response model is implemented |
+| Text symptom input | ✅ | Supported through backend API |
+| Session management | ⚠ | In-memory only, no persistent storage |
+| Emergency rule engine | ✅ | Keyword-based emergency detection is implemented |
+| AI triage engine | ✅ | Groq-backed when configured, rule-based fallback otherwise |
+| Remedies / recommended actions | ⚠ | Basic recommendations exist, not clinically robust |
+| Frontend website/chatbot | ❌ | No Next.js app exists in the repo |
+| WhatsApp bot integration | ❌ | Architecture exists on paper, not as a working system |
+| Voice input / speech-to-text | ❌ | Not implemented |
+| Image upload / analysis | ❌ | Not implemented |
+| Multilingual translation flow | ❌ | Not implemented in the MVP path |
+| Hospital recommendations | ❌ | Not implemented in the running MVP |
+| TTS audio response | ❌ | Not implemented in the running MVP |
+| Database persistence | ❌ | No real persistence layer is wired into the MVP |
+| Analytics | ❌ | Not implemented |
 
 ---
 
@@ -113,6 +146,8 @@ graph TB
 
 Users interact with SwasthAI through **two channels**: the Website or WhatsApp.
 
+**Current Status:** ❌ Neither the website channel nor the WhatsApp channel is implemented yet. The only working interface right now is the backend API.
+
 ```mermaid
 graph LR
     subgraph User["User Inputs"]
@@ -138,7 +173,7 @@ graph LR
     L --> WEB
 ```
 
-**Channel Capabilities:**
+**Target Channel Capabilities (planned, not current):**
 
 | Feature | Website | WhatsApp |
 |---|---|---|
@@ -158,6 +193,8 @@ graph LR
 ## 4. Frontend Layer — Website
 
 The website has **two major sections**: a public **Landing Page** and the **AI Chatbot** interface.
+
+**Current Status:** ❌ NOT IMPLEMENTED
 
 ### Tech Stack
 
@@ -289,6 +326,8 @@ graph TD
 
 SwasthAI is also accessible via **WhatsApp** — one phone number is connected as the bot. Users simply message the number to start a health consultation.
 
+**Current Status:** ❌ NOT IMPLEMENTED
+
 ### How It Works
 
 ```mermaid
@@ -368,6 +407,14 @@ Bot:  🤖 विश्लेषण...
 
 ## 6. API Gateway Layer
 
+**Current Status:** ⚠ PARTIAL
+
+- ✅ `POST /analyze`
+- ✅ FastAPI app bootstrapping
+- ✅ Request and response validation
+- ❌ `POST /whatsapp/webhook` in active MVP runtime
+- ❌ `GET /hospitals/nearby` in active MVP runtime
+
 ### Tech Stack
 
 | Technology | Purpose |
@@ -381,25 +428,19 @@ Bot:  🤖 विश्लेषण...
 ### Endpoints
 
 ```
-POST /analyze              # Main triage endpoint (used by Website + WhatsApp)
-POST /whatsapp/webhook     # Incoming WhatsApp message webhook
-GET  /hospitals/nearby      # Nearby hospitals by lat/lng
+POST /analyze              # ✅ Main MVP triage endpoint
+POST /whatsapp/webhook     # ❌ Planned, not part of working MVP
+GET  /hospitals/nearby     # ❌ Planned, not part of working MVP
 ```
 
-**`/analyze` Request Payload:**
+**Current MVP `/analyze` Request Payload:**
 
 ```json
 {
   "text": "I have fever",
-  "voice_text": "optional transcript",
-  "image": "base64 image",
-  "language": "hi",
-  "location": {
-    "lat": 23.03,
-    "lng": 72.58
-  },
-  "session_id": "random_id",
-  "channel": "web | whatsapp"
+  "session_id": "optional_session_id",
+  "language": "en",
+  "channel": "web"
 }
 ```
 
@@ -438,6 +479,21 @@ graph LR
 ## 7. AI Processing Pipeline
 
 The pipeline processes user input through **10 sequential steps**:
+
+**Current Status by Step**
+
+| Step | Status | Notes |
+|---|---|---|
+| 1. Input normalization | ⚠ | Text input only |
+| 2. Speech to text | ❌ | Not implemented |
+| 3. Language detection | ❌ | Not implemented in MVP path |
+| 4. Translation to English | ❌ | Not implemented in MVP path |
+| 5. Symptom extraction | ❌ | Removed from MVP path to keep backend simple |
+| 6. Emergency rule engine | ✅ | Implemented before AI triage |
+| 7. AI triage | ✅ | Implemented with Groq or rule-based fallback |
+| 8. Remedies engine | ⚠ | Basic recommended actions only |
+| 9. Translate back to user language | ❌ | Not implemented |
+| 10. Text-to-speech | ❌ | Not implemented |
 
 ```mermaid
 graph TD
@@ -576,6 +632,12 @@ English → Hindi / Gujarati / Marathi / Tamil
 
 ## 8. Healthcare Services Layer
 
+**Current Status:** ⚠ PARTIAL
+
+- ✅ Emergency escalation text with `108`
+- ❌ Hospital search API integration
+- ❌ Map rendering
+
 ### Emergency System
 
 ```mermaid
@@ -612,6 +674,10 @@ graph TD
 ---
 
 ## 9. Data Storage Layer
+
+**Current Status:** ❌ NOT IMPLEMENTED
+
+The architecture below is still planned only. The current MVP uses in-memory session state and does not persist sessions, messages, or triage results to a database.
 
 ### Database: Supabase (PostgreSQL)
 
@@ -699,6 +765,8 @@ erDiagram
 ---
 
 ## 10. Analytics Layer
+
+**Current Status:** ❌ NOT IMPLEMENTED
 
 Anonymous interaction data generates population health insights:
 
