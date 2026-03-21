@@ -1,7 +1,6 @@
 import { motion } from 'framer-motion';
 import { ArrowRight, Stethoscope, Heart, Shield, Pill } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useNavigate } from 'react-router-dom';
 
 const floatingIcons = [
   { Icon: Stethoscope, className: 'top-[15%] left-[10%]', delay: 0 },
@@ -11,7 +10,9 @@ const floatingIcons = [
 ];
 
 export default function Hero() {
-  const navigate = useNavigate();
+  const scrollToChat = () => {
+    document.getElementById('chat')?.scrollIntoView({ behavior: 'smooth' });
+  };
 
   return (
     <section className="relative min-h-screen gradient-hero flex items-center justify-center overflow-hidden">
@@ -38,7 +39,9 @@ export default function Hero() {
           transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
           className="text-5xl md:text-7xl font-heading font-bold text-accent-foreground leading-[0.95] tracking-tight text-balance"
         >
-          Your AI Health Assistant
+          Tell us what you feel.
+          <br />
+          Get help fast.
         </motion.h1>
 
         <motion.p
@@ -47,7 +50,7 @@ export default function Hero() {
           transition={{ duration: 0.7, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
           className="mt-6 text-xl md:text-2xl text-accent-foreground/80 max-w-2xl mx-auto text-pretty"
         >
-          Get instant medical guidance in your language — through text, voice, or image
+          Speak or type in your own language. We will give simple help and tell you where to go if care is needed.
         </motion.p>
 
         <motion.div
@@ -60,11 +63,11 @@ export default function Hero() {
             variant="hero"
             size="lg"
             className="text-lg px-10 py-6"
-            onClick={() => navigate('/chat')}
+            onClick={scrollToChat}
           >
-            Start Chat <ArrowRight className="w-5 h-5 ml-1" />
+            Ask for Help <ArrowRight className="w-5 h-5 ml-1" />
           </Button>
-          <span className="text-accent-foreground/60 text-sm">Also available on WhatsApp 📱</span>
+          <span className="text-accent-foreground/60 text-sm">Use on any phone browser. No app needed.</span>
         </motion.div>
       </div>
     </section>

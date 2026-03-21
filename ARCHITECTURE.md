@@ -74,7 +74,7 @@ Anonymous analytics storage is also part of the target architecture, but it is n
 | Emergency rule engine | ✅ | Keyword-based emergency detection is implemented |
 | AI triage engine | ✅ | Groq-backed when configured, rule-based fallback otherwise |
 | Remedies / recommended actions | ⚠ | Basic recommendations exist, not clinically robust |
-| Frontend website/chatbot | ❌ | No Next.js app exists in the repo |
+| Frontend website/chatbot | ⚠ | Vite React frontend exists with landing page and live text chat, but several planned features are still missing |
 | WhatsApp bot integration | ❌ | Architecture exists on paper, not as a working system |
 | Voice input / speech-to-text | ❌ | Not implemented |
 | Image upload / analysis | ❌ | Not implemented |
@@ -146,7 +146,7 @@ graph TB
 
 Users interact with SwasthAI through **two channels**: the Website or WhatsApp.
 
-**Current Status:** ❌ Neither the website channel nor the WhatsApp channel is implemented yet. The only working interface right now is the backend API.
+**Current Status:** ⚠ The website channel exists as a Vite React app. WhatsApp is still not implemented.
 
 ```mermaid
 graph LR
@@ -194,13 +194,30 @@ graph LR
 
 The website has **two major sections**: a public **Landing Page** and the **AI Chatbot** interface.
 
-**Current Status:** ❌ NOT IMPLEMENTED
+**Current Status:** ⚠ PARTIAL
+
+Implemented today:
+- landing page
+- chat page
+- text symptom input
+- quick symptom buttons
+- language selector UI
+- emergency alert UI
+- live text triage integration with the backend
+
+Still missing:
+- real voice flow
+- real image flow
+- hospital map
+- patient summary card
+- audio response playback
 
 ### Tech Stack
 
 | Technology | Purpose |
 |---|---|
-| **Next.js** | React framework with SSR |
+| **Vite** | Frontend build tool and dev server |
+| **React + React Router** | SPA UI rendering and routing |
 | **TypeScript** | Type-safe development |
 | **TailwindCSS** | Utility-first styling |
 | **ShadCN UI** | Pre-built accessible components |
@@ -254,37 +271,36 @@ The chatbot is accessed from the landing page via the **"Start Chat"** button or
 
 ```
 frontend/
-├── pages/
-│   ├── index.tsx                 # Landing page
-│   └── chat.tsx                  # Chatbot page
-└── components/
-    ├── landing/
-    │   ├── Hero.tsx              # Hero section with CTA
-    │   ├── Features.tsx          # Feature cards
-    │   ├── HowItWorks.tsx        # Step-by-step flow
-    │   ├── LanguagesSection.tsx  # Supported languages
-    │   ├── TeamSection.tsx       # Team profiles
-    │   ├── Footer.tsx            # Footer with WhatsApp link
-    │   └── Navbar.tsx            # Navigation bar
-    ├── chat/
-    │   ├── ChatUI.tsx            # Main chat interface
-    │   ├── MessageBubble.tsx     # Individual message display
-    │   ├── InputBar.tsx          # Text input with send button
-    │   ├── VoiceRecorder.tsx     # Microphone recording control
-    │   ├── ImageUploader.tsx     # Image capture & upload
-    │   ├── QuickSymptomButtons.tsx # One-tap symptom selection
-    │   ├── LanguageSelector.tsx  # Multilingual language picker
-    │   ├── EmergencyAlert.tsx    # 🚨 Emergency UI with 108 call
-    │   ├── HospitalMap.tsx       # Nearby hospitals on map
-    │   ├── PatientReportCard.tsx # Summary report display
-    │   └── AudioPlayer.tsx      # AI voice response playback
-    └── shared/
-        └── FloatingChatButton.tsx # Floating widget on landing page
+├── src/
+│   ├── pages/
+│   │   ├── Index.tsx               # Landing page
+│   │   └── Chat.tsx                # Chatbot page
+│   ├── components/
+│   │   ├── landing/
+│   │   │   ├── Hero.tsx
+│   │   │   ├── Features.tsx
+│   │   │   ├── HowItWorks.tsx
+│   │   │   ├── LanguagesSection.tsx
+│   │   │   ├── TeamSection.tsx
+│   │   │   ├── Footer.tsx
+│   │   │   ├── Navbar.tsx
+│   │   │   └── FloatingChatButton.tsx
+│   │   ├── chat/
+│   │   │   ├── ChatUI.tsx
+│   │   │   ├── MessageBubble.tsx
+│   │   │   ├── InputBar.tsx
+│   │   │   ├── QuickSymptomButtons.tsx
+│   │   │   ├── LanguageSelector.tsx
+│   │   │   └── EmergencyAlert.tsx
+│   │   └── ui/
+│   └── lib/
+│       ├── api.ts
+│       └── types.ts
 ```
 
 ```mermaid
 graph TD
-    subgraph Frontend["SwasthAI Frontend (Next.js)"]
+    subgraph Frontend["SwasthAI Frontend (Vite React)"]
         subgraph Landing["Landing Page"]
             Navbar --> Hero
             Hero --> Features
@@ -296,28 +312,29 @@ graph TD
             ChatUI["ChatUI"]
             ChatUI --> MB["MessageBubble"]
             ChatUI --> IB["InputBar"]
-            ChatUI --> VR["VoiceRecorder"]
-            ChatUI --> IU["ImageUploader"]
             ChatUI --> QSB["QuickSymptomButtons"]
             ChatUI --> LS["LanguageSelector"]
             ChatUI --> EA["EmergencyAlert"]
-            ChatUI --> HM["HospitalMap"]
-            ChatUI --> PRC["PatientReportCard"]
-            ChatUI --> AP["AudioPlayer"]
         end
     end
 ```
 
 ### Frontend Responsibilities
 
+**Current MVP responsibilities:**
+
 - **Landing page** — showcase features, team, CTA to chatbot
 - Chat interface rendering
-- Voice recording & streaming
-- Image upload & preview
 - Language selection (Hindi, Gujarati, Marathi, English, Tamil)
-- Location access via Browser GPS
-- Displaying triage results, remedies & hospital info
-- Audio playback of AI response
+- Displaying triage results and emergency alerts
+
+**Planned frontend expansions:**
+
+- Voice recording and transcription
+- Image upload and preview
+- Location access via browser GPS
+- Hospital map and recommendation cards
+- Audio playback of AI responses
 - Patient report generation
 
 ---
@@ -784,7 +801,7 @@ graph LR
 |---|---|
 | **Supabase Analytics** | Built-in data queries |
 | **Metabase** | Visual dashboards |
-| **Custom Next.js Dashboard** | Tailored health analytics UI |
+| **Custom React Dashboard** | Tailored health analytics UI |
 
 ---
 
@@ -793,7 +810,7 @@ graph LR
 ```mermaid
 graph TD
     subgraph Hosting["Deployment Infrastructure"]
-        FE["Website (Next.js)<br/>Vercel"]
+        FE["Website (Vite React)<br/>Vercel / Netlify"]
         WABOT["WhatsApp Bot (Node.js)<br/>Railway / VPS"]
         BE["Backend (FastAPI)<br/>Railway / Render / Fly.io"]
         DB["Database<br/>Supabase"]
@@ -808,7 +825,7 @@ graph TD
 
 | Component | Platform |
 |---|---|
-| **Website (Landing + Chatbot)** | Vercel |
+| **Website (Landing + Chatbot)** | Vercel / Netlify |
 | **WhatsApp Bot** | Railway / VPS (always-on process) |
 | **Backend API** | Railway / Render / Fly.io |
 | **Database** | Supabase |
@@ -840,7 +857,8 @@ graph LR
 
 | Tool | Why |
 |---|---|
-| **Next.js** | React framework, handles pages and routing |
+| **Vite** | Fast frontend build tool and dev server |
+| **React Router** | Client-side routing between landing and chat pages |
 | **TypeScript** | Type-safe code, fewer bugs |
 | **TailwindCSS** | Fast styling with utility classes |
 | **ShadCN UI** | Pre-built buttons, modals, cards, etc. |
@@ -848,7 +866,7 @@ graph LR
 
 **What You Build:**
 
-#### 🏠 Landing Page (`pages/index.tsx`)
+#### 🏠 Landing Page (`src/pages/Index.tsx`)
 
 This is the first thing users see when they visit the SwasthAI website.
 
@@ -862,7 +880,7 @@ This is the first thing users see when they visit the SwasthAI website.
 | **Team** | Card per team member with photo, name, role |
 | **Footer** | Contact info, WhatsApp bot number link, social links |
 
-#### 💬 Chatbot Interface (`pages/chat.tsx`)
+#### 💬 Chatbot Interface (`src/pages/Chat.tsx`)
 
 This is the core product — the AI health assistant chat.
 
@@ -870,77 +888,71 @@ This is the core product — the AI health assistant chat.
 |---|---|
 | **ChatUI** | Main container — holds all messages, input bar, and panels |
 | **MessageBubble** | Renders individual messages (user = right, bot = left) with different styles |
-| **InputBar** | Text field + send button at the bottom |
-| **VoiceRecorder** | Microphone button — records audio, sends to backend |
-| **ImageUploader** | Camera/upload button — lets user take photo or pick from gallery |
+| **InputBar** | Text field + send button at the bottom; voice and image controls are still disabled in the MVP |
 | **QuickSymptomButtons** | Row of buttons: Fever, Pain, Headache, Wound, Breathing Issue, Bleeding |
 | **LanguageSelector** | Dropdown to pick language (Hindi, English, etc.) — send `language` field to API |
 | **EmergencyAlert** | 🚨 Red banner — shows when backend returns `triage: emergency` — has **Call 108** button |
-| **HospitalMap** | Displays nearby hospitals on a map (uses data from Member 5) |
-| **PatientReportCard** | Summary card showing symptoms, triage result, advice — downloadable |
-| **AudioPlayer** | Plays the AI's voice response (audio file URL from backend) |
 | **FloatingChatButton** | Persistent bubble on landing page — click to open chat |
 
 **Files You Own:**
 
 ```
 frontend/
-├── pages/
-│   ├── index.tsx              # Landing page
-│   └── chat.tsx               # Chatbot page
-└── components/
-    ├── landing/
-    │   ├── Navbar.tsx
-    │   ├── Hero.tsx
-    │   ├── Features.tsx
-    │   ├── HowItWorks.tsx
-    │   ├── LanguagesSection.tsx
-    │   ├── TeamSection.tsx
-    │   └── Footer.tsx
-    ├── chat/
-    │   ├── ChatUI.tsx
-    │   ├── MessageBubble.tsx
-    │   ├── InputBar.tsx
-    │   ├── VoiceRecorder.tsx
-    │   ├── ImageUploader.tsx
-    │   ├── QuickSymptomButtons.tsx
-    │   ├── LanguageSelector.tsx
-    │   ├── EmergencyAlert.tsx
-    │   ├── HospitalMap.tsx
-    │   ├── PatientReportCard.tsx
-    │   └── AudioPlayer.tsx
-    └── shared/
-        └── FloatingChatButton.tsx
+└── src/
+    ├── pages/
+    │   ├── Index.tsx
+    │   └── Chat.tsx
+    ├── components/
+    │   ├── landing/
+    │   │   ├── Navbar.tsx
+    │   │   ├── Hero.tsx
+    │   │   ├── Features.tsx
+    │   │   ├── HowItWorks.tsx
+    │   │   ├── LanguagesSection.tsx
+    │   │   ├── TeamSection.tsx
+    │   │   ├── Footer.tsx
+    │   │   └── FloatingChatButton.tsx
+    │   ├── chat/
+    │   │   ├── ChatUI.tsx
+    │   │   ├── MessageBubble.tsx
+    │   │   ├── InputBar.tsx
+    │   │   ├── QuickSymptomButtons.tsx
+    │   │   ├── LanguageSelector.tsx
+    │   │   └── EmergencyAlert.tsx
+    │   └── ui/
+    └── lib/
+        ├── api.ts
+        └── types.ts
 ```
 
 **API You Call (built by Member 2):**
 
 ```
 POST /analyze
-Body: { text, voice_text, image, language, location, session_id, channel: "web" }
+Body: { text, language, session_id?, channel: "web" }
 ```
 
 **What You Receive from Backend:**
 
 ```json
 {
+  "session_id": "web-uuid",
   "triage": "self-care | clinic | emergency",
   "reason": "Fever lasting > 2 days",
   "confidence": 0.82,
-  "remedies": ["rest", "drink fluids"],
-  "audio_url": "https://...",
-  "hospitals": [{ "name": "...", "lat": 23.0, "lng": 72.5, "distance": "2.1 km" }],
-  "report": { "symptoms": [...], "triage": "...", "advice": "..." }
+  "recommended_actions": ["rest", "drink fluids"],
+  "is_emergency": false,
+  "disclaimer": "This is AI-assisted triage, not a diagnosis."
 }
 ```
 
 **🚀 Start Here:**
-1. Run `npx create-next-app@latest ./` with TypeScript + Tailwind
-2. Install ShadCN UI and Framer Motion
-3. Build the landing page first (`pages/index.tsx`)
-4. Build the chat UI (`pages/chat.tsx`) — hardcode fake bot responses initially
+1. Use the existing Vite React app in `frontend/`
+2. Run `npm install`
+3. Build the landing page in `src/pages/Index.tsx`
+4. Build the chat UI in `src/pages/Chat.tsx`
 5. Connect to Member 2's API once it's ready
-6. Add the hospital map once Member 5 provides the data format
+6. Add voice, image, hospital map, and patient report features after the MVP API is stable
 
 ---
 
@@ -976,54 +988,40 @@ This is the **core endpoint**. When a request comes in (from website OR WhatsApp
 ```
 1. Validate request (Pydantic)
 2. Create or resume session (session_id)
-3. If voice_text exists → already transcribed, skip
-4. If image exists → pass to AI for interpretation
-5. Call Member 4's translation function → translate to English
-6. Call Member 3's emergency check → is it critical?
-7. If emergency → return emergency response immediately
-8. Call Member 3's triage function → get AI diagnosis
-9. Call Member 3's remedy function → get home remedies
-10. Call Member 4's translate-back function → convert response to user's language
-11. Call Member 4's TTS function → generate audio response
-12. Call Member 5's hospital function → get nearby hospitals
-13. Save everything to database (Member 5's Supabase)
-14. Return final JSON response
+3. Run emergency rule check on the text
+4. If emergency → return emergency response immediately
+5. Otherwise call the AI triage function
+6. Normalize confidence and recommended actions
+7. Return final JSON response
 ```
 
 #### Request & Response
 
-**Request (from website or WhatsApp bot):**
+**Current MVP Request (from website):**
 
 ```json
 {
   "text": "I have fever",
-  "voice_text": "optional transcript",
-  "image": "base64 image string",
-  "language": "hi",
-  "location": { "lat": 23.03, "lng": 72.58 },
+  "language": "en",
   "session_id": "uuid",
-  "channel": "web | whatsapp"
+  "channel": "web"
 }
 ```
 
-**Response (sent back to website or WhatsApp bot):**
+**Current MVP Response:**
 
 ```json
 {
-  "triage": "self-care",
-  "reason": "Mild fever with no alarming symptoms",
-  "confidence": 0.85,
-  "remedies": ["Rest", "Drink warm fluids", "Take paracetamol if needed"],
-  "audio_url": "https://storage.example.com/response_audio.mp3",
-  "hospitals": [
-    { "name": "City Hospital", "lat": 23.04, "lng": 72.59, "distance": "1.2 km", "contact": "079-12345678" }
+  "session_id": "uuid",
+  "triage": "clinic",
+  "reason": "The symptoms sound persistent or significant enough to need a clinician review.",
+  "confidence": 0.72,
+  "recommended_actions": [
+    "Book a clinic visit within the next 24 to 48 hours.",
+    "Track when symptoms started and whether they are getting worse."
   ],
-  "report": {
-    "symptoms": ["fever"],
-    "triage": "self-care",
-    "advice": "Rest and monitor temperature",
-    "timestamp": "2026-03-21T14:00:00Z"
-  }
+  "is_emergency": false,
+  "disclaimer": "This is AI-assisted triage, not a diagnosis."
 }
 ```
 
@@ -1057,12 +1055,11 @@ backend/
 - **Member 4** → JSON responses for WhatsApp bot replies
 
 **🚀 Start Here:**
-1. Run `pip install fastapi uvicorn pydantic httpx`
-2. Create `main.py` with a basic `/analyze` endpoint that returns hardcoded data
-3. Add Pydantic models for request validation
-4. Build `pipeline.py` — initially mock Member 3 & 4's functions with fake data
-5. Replace mocks as Members 3 & 4 deliver their functions
-6. Connect to Supabase once Member 5 sets up the database
+1. Use the existing backend in `backend/`
+2. Keep `/analyze` working and tested before adding new inputs
+3. Add translation, voice, image, and persistence one layer at a time
+4. Do not wire unfinished features into the main runtime path
+5. Connect to Supabase once Member 5 sets up the database
 
 ---
 
@@ -1325,7 +1322,7 @@ whatsapp-bot/
 | **Mapbox / Google Maps API** | Hospital map rendering & directions |
 | **Redis** | Caching frequent queries for speed |
 | **Docker** | Containerize services for deployment |
-| **Vercel** | Deploy the Next.js website |
+| **Vercel / Netlify** | Deploy the Vite React website |
 | **Railway / VPS** | Deploy FastAPI backend + WhatsApp bot |
 
 **What You Build:**
@@ -1388,7 +1385,7 @@ navigator.geolocation.getCurrentPosition(
 
 | What | Where | How |
 |---|---|---|
-| **Next.js website** | Vercel | Connect GitHub repo → auto-deploy |
+| **Vite React website** | Vercel / Netlify | Connect GitHub repo → auto-deploy |
 | **FastAPI backend** | Railway / Render | Docker container or direct deploy |
 | **WhatsApp bot** | Railway / VPS | Always-on Node.js process (needs persistent connection) |
 | **Supabase** | Supabase Cloud | Already hosted |
@@ -1396,7 +1393,7 @@ navigator.geolocation.getCurrentPosition(
 
 #### 5. Analytics Dashboard
 
-Build a simple dashboard (can be a Next.js page at `/admin/dashboard`) showing:
+Build a simple dashboard (for example a React route at `/admin`) showing:
 
 | Metric | Query |
 |---|---|
@@ -1423,9 +1420,9 @@ backend/
 
 # Analytics (inside frontend)
 frontend/
-└── pages/
-    └── admin/
-        └── dashboard.tsx    # Analytics dashboard page
+└── src/
+    └── pages/
+        └── AdminDashboard.tsx    # Analytics dashboard page
 ```
 
 **You Deliver To:**
@@ -1434,7 +1431,7 @@ frontend/
 - **Everyone** → Deployed URLs for testing
 
 **You Depend On:**
-- **Member 1** → Frontend code to deploy on Vercel
+- **Member 1** → Frontend code to deploy on Vercel or Netlify
 - **Member 2** → Backend code to deploy on Railway
 - **Member 4** → WhatsApp bot code to deploy on VPS
 
@@ -1443,7 +1440,7 @@ frontend/
 2. Create all 7 tables using the SQL editor
 3. Populate `hospital_data` with real hospital data (start with 20-30 hospitals in your city)
 4. Build `database.py` and `hospitals.py` — test with sample data
-5. Set up deployment: connect GitHub to Vercel (frontend) and Railway (backend)
+5. Set up deployment: connect GitHub to Vercel or Netlify (frontend) and Railway (backend)
 6. Build the analytics dashboard last — it needs real data from usage
 
 ---
@@ -1457,7 +1454,7 @@ graph TD
         WAUSER["📱 WhatsApp User"]
     end
 
-    WEB -->|"Landing Page → Start Chat"| FE["Next.js Chatbot"]
+    WEB -->|"Landing Page → Start Chat"| FE["Vite React Chatbot"]
     WAUSER -->|"Send message"| WABOT["WhatsApp Bot Server"]
 
     FE -->|"POST /analyze"| API["FastAPI Backend"]

@@ -1,13 +1,11 @@
 import { motion } from 'framer-motion';
-import { Globe, Mic, Camera, AlertTriangle, MapPin, FileText } from 'lucide-react';
+import { Globe, Mic, HeartPulse, MapPin } from 'lucide-react';
 
 const features = [
-  { Icon: Globe, title: 'Multilingual Support', desc: 'Speak in Hindi, English, Gujarati, Marathi, or Tamil — SwasthAI understands all' },
-  { Icon: Mic, title: 'Voice Input', desc: 'Just speak your symptoms naturally — no typing needed' },
-  { Icon: Camera, title: 'Image Analysis', desc: 'Upload photos of wounds, rashes, or injuries for AI-powered visual analysis' },
-  { Icon: AlertTriangle, title: 'Emergency Detection', desc: 'Instant detection of critical conditions with one-tap ambulance call (108)' },
-  { Icon: MapPin, title: 'Hospital Finder', desc: 'GPS-based nearest hospital recommendations with directions' },
-  { Icon: FileText, title: 'Patient Reports', desc: 'Get a downloadable health summary after each consultation' },
+  { Icon: Globe, title: 'Use your language', desc: 'Hindi, Gujarati, Marathi, Tamil, or English' },
+  { Icon: Mic, title: 'Type or speak', desc: 'You can write your problem or say it aloud' },
+  { Icon: HeartPulse, title: 'Get simple guidance', desc: 'We tell you if you can rest at home, visit a health centre, or go for urgent help' },
+  { Icon: MapPin, title: 'Find nearby care', desc: 'Share your location to see a nearby PHC, health centre, or hospital' },
 ];
 
 export default function Features() {
@@ -21,10 +19,14 @@ export default function Features() {
           transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
           className="text-3xl md:text-4xl font-heading font-bold text-foreground text-center text-balance"
         >
-          What SwasthAI Can Do
+          How SwasthAI Helps
         </motion.h2>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-16">
+        <p className="mx-auto mt-4 max-w-2xl text-center text-lg leading-relaxed text-muted-foreground text-pretty">
+          This tool is made to give quick help in simple words, especially when getting a doctor quickly is difficult.
+        </p>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-16">
           {features.map(({ Icon, title, desc }, i) => (
             <motion.div
               key={title}

@@ -1,19 +1,18 @@
 import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Menu, X } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { Menu } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
-import { useNavigate } from 'react-router-dom';
 
 const navLinks = [
-  { label: 'Features', href: '#features' },
-  { label: 'How It Works', href: '#how-it-works' },
+  { label: 'How It Helps', href: '#features' },
+  { label: 'Languages', href: '#languages' },
+  { label: 'Ask Now', href: '#chat' },
 ];
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
-  const navigate = useNavigate();
 
   useEffect(() => {
     const handler = () => setScrolled(window.scrollY > 20);
@@ -50,8 +49,8 @@ export default function Navbar() {
               {link.label}
             </button>
           ))}
-          <Button variant="cta" size="lg" onClick={() => navigate('/chat')}>
-            Start Chat
+          <Button variant="cta" size="lg" onClick={() => scrollTo('#chat')}>
+            Ask Now
           </Button>
         </div>
 
@@ -74,8 +73,8 @@ export default function Navbar() {
                     {link.label}
                   </button>
                 ))}
-                <Button variant="cta" onClick={() => { setOpen(false); navigate('/chat'); }}>
-                  Start Chat
+                <Button variant="cta" onClick={() => scrollTo('#chat')}>
+                  Ask Now
                 </Button>
               </div>
             </SheetContent>

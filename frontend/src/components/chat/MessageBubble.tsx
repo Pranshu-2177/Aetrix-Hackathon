@@ -1,12 +1,21 @@
 import { motion } from 'framer-motion';
-import { Shield } from 'lucide-react';
-import type { Message, TriageData, Hospital, PatientReport } from '@/lib/types';
+import { Building2, ExternalLink, MapPin, Phone, Shield } from 'lucide-react';
+import { UI_STRINGS, type FacilityInfo, type Language, type Message, type TriageData } from '@/lib/types';
 
-function TriageBadge({ triage, confidence }: { triage: string; confidence: number }) {
+function TriageBadge({
+  triage,
+  confidence,
+  language,
+}: {
+  triage: string;
+  confidence: number;
+  language: Language;
+}) {
+  const ui = UI_STRINGS[language];
   const config = {
-    'self-care': { bg: 'bg-success-light', text: 'text-success', label: '✅ Self-Care' },
-    clinic: { bg: 'bg-warning-light', text: 'text-warning', label: '🏥 Visit Clinic' },
-    emergency: { bg: 'bg-emergency-light', text: 'text-emergency', label: '🚨 Emergency' },
+    'self-care': { bg: 'bg-success-light', text: 'text-success', label: `✅ ${ui.selfCareBadge}` },
+    clinic: { bg: 'bg-warning-light', text: 'text-warning', label: `🏥 ${ui.clinicBadge}` },
+    emergency: { bg: 'bg-emergency-light', text: 'text-emergency', label: `🚨 ${ui.emergencyBadge}` },
   }[triage] || { bg: 'bg-muted', text: 'text-foreground', label: triage };
 
   return (
@@ -20,46 +29,25 @@ function TriageBadge({ triage, confidence }: { triage: string; confidence: numbe
   );
 }
 
-function HospitalCards({ hospitals }: { hospitals: Hospital[] }) {
-  return (
-    <div className="space-y-2 mt-2">
-      {hospitals.map((h, i) => (
-        <div key={i} className="bg-teal-lightest rounded-lg p-3 text-sm">
-          <div className="flex justify-between items-start">
-            <span className="font-semibold text-foreground">🏥 {h.name}</span>
-            <span className="text-muted-foreground text-xs">{h.distance}</span>
-          </div>
-          <div className="text-muted-foreground text-xs mt-1">Contact: {h.contact}</div>
-          <div className="flex gap-2 mt-2">
-            <a href={`tel:${h.contact}`} className="text-xs px-3 py-1 rounded-full bg-teal text-accent-foreground font-medium">📞 Call</a>
-            <a href={`https://www.google.com/maps?q=${h.lat},${h.lng}`} target="_blank" rel="noopener" className="text-xs px-3 py-1 rounded-full border border-teal text-teal font-medium">🗺️ Directions</a>
-          </div>
-        </div>
-      ))}
-    </div>
-  );
+function formatFacilityType(facilityType: FacilityInfo['facility_type']) {
+  if (facilityType === 'hospital') {
+    return 'Hospital';
+  }
+  return 'Health centre';
 }
 
-function ReportCard({ report }: { report: PatientReport }) {
-  return (
-    <div className="bg-card border-l-4 border-teal rounded-xl p-4 mt-2">
-      <h4 className="font-heading font-bold text-foreground text-sm mb-2">📋 Patient Summary Report</h4>
-      <div className="text-sm space-y-2">
-        <div><span className="font-medium text-foreground">Symptoms:</span>
-          <ul className="list-disc ml-5 text-muted-foreground">{report.symptoms.map((s, i) => <li key={i}>{s}</li>)}</ul>
-        </div>
-        <div><span className="font-medium text-foreground">Triage:</span>{' '}
-          <TriageBadge triage={report.triage} confidence={0.85} />
-        </div>
-        <p className="text-muted-foreground">{report.advice}</p>
-        <p className="text-xs text-muted-foreground">Generated: {new Date(report.timestamp).toLocaleString()}</p>
-      </div>
-    </div>
-  );
+function buildMapsLink(facility: FacilityInfo) {
+  const destination = `${facility.lat},${facility.lng}`;
+  return `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(destination)}`;
 }
 
 export default function MessageBubble({ message }: { message: Message }) {
   const isUser = message.role === 'user';
+  const triageData = message.data as TriageData | undefined;
+  const facilityData = message.data as FacilityInfo[] | undefined;
+  const language = message.language ?? triageData?.language ?? 'en';
+  const ui = UI_STRINGS[language];
+  const showPrimaryText = message.type !== 'triage' || !triageData;
 
   return (
     <motion.div
@@ -82,29 +70,70 @@ export default function MessageBubble({ message }: { message: Message }) {
           <img src={message.imageUrl} alt="Uploaded" className="w-full max-w-[200px] rounded-lg mb-2" />
         )}
 
-        <p className="text-sm leading-relaxed whitespace-pre-wrap">{message.content}</p>
+        {showPrimaryText && <p className="text-sm leading-relaxed whitespace-pre-wrap">{message.content}</p>}
 
-        {message.type === 'triage' && message.data && 'triage' in message.data && (
+        {message.type === 'triage' && triageData && (
           <div className="mt-3">
-            <TriageBadge triage={(message.data as TriageData).triage} confidence={(message.data as TriageData).confidence} />
-            <p className="text-xs text-muted-foreground mt-1">{(message.data as TriageData).reason}</p>
+            <TriageBadge triage={triageData.triage} confidence={triageData.confidence} language={language} />
+            <p className="text-xs text-muted-foreground mt-1">{triageData.reason}</p>
+            {triageData.recommendedActions[0] && (
+              <div className="mt-2 rounded-lg bg-muted/60 px-3 py-2">
+                <p className="text-xs font-medium text-foreground mb-1">{ui.immediateStep}</p>
+                <p className="text-xs text-muted-foreground">{triageData.recommendedActions[0]}</p>
+              </div>
+            )}
           </div>
         )}
 
-        {message.type === 'remedies' && message.data && 'remedies' in message.data && (
-          <ul className="mt-2 space-y-1">
-            {(message.data as TriageData).remedies.map((r, i) => (
-              <li key={i} className="text-sm flex items-start gap-2"><span>💊</span>{r}</li>
+        {message.type === 'actions' && triageData && (
+          <div className="mt-2">
+            <ul className="space-y-1">
+              {triageData.recommendedActions.map((action, i) => (
+                <li key={i} className="text-sm flex items-start gap-2"><span>•</span>{action}</li>
+              ))}
+            </ul>
+            <p className="text-xs text-muted-foreground mt-3">{triageData.disclaimer}</p>
+          </div>
+        )}
+
+        {message.type === 'facilities' && facilityData && (
+          <div className="mt-2 space-y-3">
+            {facilityData.map((facility) => (
+              <div key={`${facility.name}-${facility.lat}-${facility.lng}`} className="rounded-xl border border-border bg-muted/30 p-3">
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <Building2 className="h-4 w-4 text-teal" />
+                      <p className="text-sm font-medium text-foreground">{facility.name}</p>
+                    </div>
+                    <p className="mt-1 text-xs text-muted-foreground">{formatFacilityType(facility.facility_type)}</p>
+                  </div>
+                </div>
+
+                <div className="mt-3 flex flex-wrap gap-3 text-xs text-muted-foreground">
+                  <span className="flex items-center gap-1">
+                    <MapPin className="h-3.5 w-3.5" />
+                    {ui.distanceLabel}: {facility.distance_text}
+                  </span>
+                  <a
+                    href={buildMapsLink(facility)}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center gap-1 rounded-full bg-teal px-3 py-1.5 text-xs font-medium text-accent-foreground transition hover:bg-teal/90"
+                  >
+                    <ExternalLink className="h-3.5 w-3.5" />
+                    {ui.directionsLabel}
+                  </a>
+                  {facility.contact && (
+                    <a href={`tel:${facility.contact}`} className="flex items-center gap-1 text-teal hover:underline">
+                      <Phone className="h-3.5 w-3.5" />
+                      {ui.callLabel}: {facility.contact}
+                    </a>
+                  )}
+                </div>
+              </div>
             ))}
-          </ul>
-        )}
-
-        {message.type === 'hospitals' && Array.isArray(message.data) && (
-          <HospitalCards hospitals={message.data as Hospital[]} />
-        )}
-
-        {message.type === 'report' && message.data && 'symptoms' in message.data && (
-          <ReportCard report={message.data as PatientReport} />
+          </div>
         )}
 
         <p className={`text-[10px] mt-1 ${isUser ? 'text-accent-foreground/60' : 'text-muted-foreground'}`}>

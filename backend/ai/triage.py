@@ -1,91 +1,37 @@
-"""AI triage service with a deterministic fallback for the MVP."""
+"""Rule-based triage service for the rural-first MVP."""
 
 from __future__ import annotations
 
-import json
-import re
 from typing import Any, Dict, List
-
-from backend.config import settings
 
 VALID_TRIAGE_LEVELS = {"self-care", "clinic", "emergency"}
 
 DEFAULT_ACTIONS = {
     "self-care": [
-        "Rest, hydrate, and monitor symptoms for the next 24 hours.",
-        "Use basic over-the-counter relief only if it is normally safe for you.",
-        "Get medical help sooner if symptoms worsen, spread, or new red flags appear.",
+        "Rest, drink safe fluids, and monitor symptoms for the next 24 hours.",
+        "Use basic home care only if symptoms stay mild and there are no danger signs.",
+        "Visit the nearest PHC if symptoms continue beyond 2 days or worsen.",
     ],
     "clinic": [
-        "Book a clinic visit within the next 24 to 48 hours.",
-        "Track when symptoms started and whether they are getting worse.",
-        "Seek urgent care sooner if you develop breathing trouble, severe pain, or fainting.",
+        "Visit the nearest PHC or clinic within the next 24 to 48 hours.",
+        "Monitor whether the symptoms are lasting longer, getting worse, or spreading.",
+        "Go sooner if you develop chest pain, breathing trouble, confusion, or fainting.",
     ],
     "emergency": [
         "Call 108 or go to the nearest emergency department now.",
-        "Do not wait to see if it settles on its own.",
-        "If possible, have someone stay with you while you seek care.",
+        "Do not rely on home remedies for these symptoms.",
+        "If possible, have someone stay with you while you seek help.",
     ],
 }
 
 
 async def run_triage(text: str) -> Dict[str, Any]:
-    """Classify the urgency of a symptom description."""
-    if settings.has_groq:
-        return await _triage_with_groq(text)
+    """Classify the urgency of a symptom description using deterministic rules."""
     return _triage_fallback(text)
 
 
-async def _triage_with_groq(text: str) -> Dict[str, Any]:
-    """Use Groq for triage and degrade cleanly if the model call fails."""
-    try:
-        from groq import Groq
-
-        from backend.ai.prompts import TRIAGE_PROMPT
-
-        client = Groq(api_key=settings.GROQ_API_KEY)
-        response = client.chat.completions.create(
-            model=settings.GROQ_MODEL,
-            messages=[
-                {
-                    "role": "system",
-                    "content": "You are a health triage assistant. Return only valid JSON.",
-                },
-                {
-                    "role": "user",
-                    "content": TRIAGE_PROMPT.format(text=text),
-                },
-            ],
-            temperature=0.1,
-            max_tokens=300,
-        )
-
-        content = response.choices[0].message.content.strip()
-        content = re.sub(r"```json\s*", "", content)
-        content = re.sub(r"```\s*", "", content)
-        parsed = json.loads(content)
-
-        triage = parsed.get("triage", "clinic")
-        if triage not in VALID_TRIAGE_LEVELS:
-            triage = "clinic"
-
-        reason = str(parsed.get("reason", "Symptoms need clinician review.")).strip()
-        confidence = _clamp_confidence(parsed.get("confidence", 0.7))
-        recommended_actions = _normalize_actions(parsed.get("recommended_actions"), triage)
-
-        return {
-            "triage": triage,
-            "reason": reason,
-            "confidence": confidence,
-            "recommended_actions": recommended_actions,
-        }
-    except Exception as exc:
-        print(f"[Triage] Groq failed, using fallback: {exc}")
-        return _triage_fallback(text)
-
-
 def _triage_fallback(text: str) -> Dict[str, Any]:
-    """Simple keyword-based fallback so the API still works without Groq."""
+    """Keyword-based classifier tuned for hackathon MVP triage."""
     lower_text = text.lower()
 
     emergency_keywords = [
@@ -105,31 +51,47 @@ def _triage_fallback(text: str) -> Dict[str, Any]:
             "recommended_actions": DEFAULT_ACTIONS["emergency"],
         }
 
-    clinic_keywords = [
+    persistent_keywords = [
         "persistent",
         "days",
         "weeks",
         "worsening",
+        "high fever",
+        "vomiting",
+        "diarrhea",
+        "cough",
+        "fever",
+    ]
+    if any(keyword in lower_text for keyword in persistent_keywords):
+        return {
+            "triage": "clinic",
+            "reason": "Persistent fever, cough, diarrhea, vomiting, or worsening symptoms should be checked at a clinic soon.",
+            "confidence": 0.78,
+            "recommended_actions": DEFAULT_ACTIONS["clinic"],
+        }
+
+    clinic_keywords = [
         "swelling",
         "pus",
         "infection",
-        "high fever",
         "severe pain",
-        "vomiting",
-        "diarrhea",
+        "wound",
+        "burn",
+        "rash",
+        "dehydration",
     ]
     if any(keyword in lower_text for keyword in clinic_keywords):
         return {
             "triage": "clinic",
-            "reason": "The symptoms sound persistent or significant enough to need a clinician review.",
-            "confidence": 0.72,
+            "reason": "Severe pain, swelling, or signs of infection should be assessed by a clinician.",
+            "confidence": 0.74,
             "recommended_actions": DEFAULT_ACTIONS["clinic"],
         }
 
     return {
         "triage": "self-care",
-        "reason": "The symptoms sound mild based on the information provided, so home monitoring is reasonable for now.",
-        "confidence": 0.64,
+        "reason": "Mild symptoms can be monitored at home for now if there are no danger signs.",
+        "confidence": 0.68,
         "recommended_actions": DEFAULT_ACTIONS["self-care"],
     }
 

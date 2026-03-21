@@ -5,7 +5,8 @@ Returns the transcript as a string.
 """
 
 from typing import Optional
-from config import settings
+
+from backend.config import settings
 
 
 async def speech_to_text(audio_bytes: bytes) -> Optional[str]:

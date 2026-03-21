@@ -8,12 +8,20 @@ The current MVP only supports one honest path:
 - emergency keyword screening
 - AI or fallback triage classification
 - structured JSON response
+- Vite React frontend wired to the live backend
 
 Everything else in the original architecture is still pending or only partially scaffolded.
 
-## Current backend structure
+## Current project structure
 
 ```text
+frontend/
+├── src/
+│   ├── pages/
+│   ├── components/
+│   └── lib/
+└── package.json
+
 backend/
 ├── ai/
 │   ├── emergency.py
@@ -32,6 +40,21 @@ backend/
 ├── config.py
 ├── main.py
 └── requirements.txt
+```
+
+## Frontend stack
+
+The website is a `Vite + React + React Router + TypeScript + Tailwind + shadcn/ui` app.
+It is not a Next.js app.
+
+## Run the frontend
+
+From the repo root:
+
+```bash
+cd frontend
+npm install
+npm run dev
 ```
 
 ## Run the backend
@@ -81,7 +104,6 @@ Example response:
 
 ## What is not done yet
 
-- frontend chat UI
 - voice input and speech-to-text
 - image upload and image analysis
 - translation pipeline

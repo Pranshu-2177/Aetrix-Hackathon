@@ -1,14 +1,14 @@
 
-
-const quickLinks = ['Features', 'How It Works', 'Start Chat'];
+const quickLinks = ['How It Helps', 'Languages', 'Ask Now'];
 
 export default function Footer() {
   const scrollTo = (label: string) => {
-    if (label === 'Start Chat') {
-      window.location.href = '/chat';
-      return;
-    }
-    const id = label.toLowerCase().replace(/ /g, '-');
+    const idMap: Record<string, string> = {
+      'How It Helps': 'features',
+      'Languages': 'languages',
+      'Ask Now': 'chat',
+    };
+    const id = idMap[label];
     document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
   };
 
@@ -21,7 +21,7 @@ export default function Footer() {
               <img src="/swasthai-logo-light.svg" alt="SwasthAI" className="h-8 w-auto" />
             </div>
             <p className="text-primary-foreground/60 text-sm leading-relaxed">
-              AI-powered healthcare for everyone
+              Simple health help for every family
             </p>
           </div>
 
@@ -42,7 +42,8 @@ export default function Footer() {
 
           <div>
             <h4 className="font-heading font-semibold mb-4 text-sm uppercase tracking-wider text-primary-foreground/40">Connect</h4>
-            <p className="text-primary-foreground/70 text-sm">📱 Chat on WhatsApp</p>
+            <p className="text-primary-foreground/70 text-sm">Works in your phone browser</p>
+            <p className="text-primary-foreground/50 text-sm mt-1">WhatsApp support coming soon</p>
           </div>
         </div>
 

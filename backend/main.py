@@ -7,10 +7,12 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from backend.config import settings
 from backend.routes.analyze import router as analyze_router
+from backend.routes.hospitals import router as facilities_router
+from backend.routes.whatsapp import router as whatsapp_router
 
 app = FastAPI(
     title=settings.APP_NAME,
-    description="MVP backend for SwasthAI text-based health triage.",
+    description="Rural-first SwasthAI backend for multilingual rule-based health triage.",
     version=settings.APP_VERSION,
 )
 
@@ -23,6 +25,8 @@ app.add_middleware(
 )
 
 app.include_router(analyze_router, prefix=settings.API_PREFIX, tags=["Triage"])
+app.include_router(facilities_router, prefix=settings.API_PREFIX, tags=["Facilities"])
+app.include_router(whatsapp_router, prefix=settings.API_PREFIX, tags=["WhatsApp"])
 
 
 @app.get("/health", tags=["System"])
@@ -32,8 +36,8 @@ async def health_check() -> dict:
         "status": "ok",
         "service": settings.APP_NAME,
         "version": settings.APP_VERSION,
-        "groq_configured": settings.has_groq,
-        "mode": "ai" if settings.has_groq else "rule-based-fallback",
+        "mode": "rule-based",
+        "deepgram_configured": settings.has_deepgram,
     }
 
 

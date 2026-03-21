@@ -2,13 +2,28 @@
 
 from __future__ import annotations
 
-from typing import List, Literal
+from typing import List, Literal, Optional
 
 from pydantic import BaseModel, Field
 
 
+class FacilityInfo(BaseModel):
+    name: str = Field(..., description="Facility name")
+    facility_type: Literal["phc", "chc", "hospital"] = Field(..., description="Type of care centre")
+    lat: float = Field(..., description="Latitude")
+    lng: float = Field(..., description="Longitude")
+    distance_km: float = Field(..., description="Distance from the user in kilometers")
+    distance_text: str = Field(..., description="Human-readable distance string")
+    contact: Optional[str] = Field(default=None, description="Phone number if available")
+    recommended_for: List[Literal["clinic", "emergency"]] = Field(
+        default_factory=list,
+        description="Which triage levels this facility is appropriate for.",
+    )
+
+
 class AnalyzeResponse(BaseModel):
     session_id: str = Field(..., description="Server-side session identifier")
+    language: str = Field(..., description="Detected or selected response language")
     triage: Literal["self-care", "clinic", "emergency"] = Field(
         ...,
         description="Urgency classification for the reported symptoms.",
@@ -19,8 +34,12 @@ class AnalyzeResponse(BaseModel):
         default_factory=list,
         description="Immediate next steps the user should take.",
     )
+    facilities: List[FacilityInfo] = Field(
+        default_factory=list,
+        description="Nearest appropriate PHCs or hospitals based on triage level.",
+    )
     is_emergency: bool = Field(default=False, description="True when emergency escalation is required.")
     disclaimer: str = Field(
-        default="This is AI-assisted triage, not a diagnosis. Seek professional care if symptoms worsen or you are unsure.",
+        default="This gives quick guidance only. It is not a doctor's final advice. If you feel worse or feel unsafe, go to a doctor or hospital.",
         description="Safety disclaimer shown with every response.",
     )

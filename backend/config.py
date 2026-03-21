@@ -12,7 +12,7 @@ load_dotenv()
 
 class Settings:
     APP_NAME: str = "SwasthAI API"
-    APP_VERSION: str = "0.1.0"
+    APP_VERSION: str = "0.2.0"
     API_PREFIX: str = ""
 
     HOST: str = os.getenv("HOST", "0.0.0.0")
@@ -20,12 +20,17 @@ class Settings:
 
     GROQ_API_KEY: str = os.getenv("GROQ_API_KEY", "")
     GROQ_MODEL: str = os.getenv("GROQ_MODEL", "llama-3.3-70b-versatile")
+    DEEPGRAM_API_KEY: str = os.getenv("DEEPGRAM_API_KEY", "")
 
     CORS_ORIGINS_RAW: str = os.getenv("CORS_ORIGINS", "*")
 
     @property
     def has_groq(self) -> bool:
         return bool(self.GROQ_API_KEY)
+
+    @property
+    def has_deepgram(self) -> bool:
+        return bool(self.DEEPGRAM_API_KEY)
 
     @property
     def cors_origins(self) -> List[str]:

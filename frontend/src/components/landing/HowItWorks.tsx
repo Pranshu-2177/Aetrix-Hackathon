@@ -1,10 +1,10 @@
 import { motion } from 'framer-motion';
-import { Edit3, Brain, CheckCircle } from 'lucide-react';
+import { MessageSquareText, HeartPulse, MapPinned } from 'lucide-react';
 
 const steps = [
-  { Icon: Edit3, title: 'Describe Symptoms', desc: 'Type, speak, or upload an image of your symptoms', num: 1 },
-  { Icon: Brain, title: 'AI Analyzes', desc: 'Our AI triages urgency + generates personalized guidance', num: 2 },
-  { Icon: CheckCircle, title: 'Get Guidance', desc: 'Receive self-care advice, clinic recommendations, or emergency alerts', num: 3 },
+  { Icon: MessageSquareText, title: 'Tell us your problem', desc: 'Write or speak and explain what you are feeling', num: 1 },
+  { Icon: HeartPulse, title: 'We check how serious it is', desc: 'We sort it into home care, health centre visit, or emergency help', num: 2 },
+  { Icon: MapPinned, title: 'We show your next step', desc: 'If needed, we also show a nearby place where you can go for care', num: 3 },
 ];
 
 export default function HowItWorks() {
@@ -18,7 +18,7 @@ export default function HowItWorks() {
           transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
           className="text-3xl md:text-4xl font-heading font-bold text-foreground text-center text-balance"
         >
-          How It Works
+          Very Simple To Use
         </motion.h2>
 
         <div className="mt-16 flex flex-col md:flex-row items-start md:items-center justify-center gap-8 md:gap-4">

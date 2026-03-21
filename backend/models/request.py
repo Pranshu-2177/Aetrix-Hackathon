@@ -5,7 +5,7 @@ from __future__ import annotations
 import uuid
 from typing import Literal, Optional
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field, field_validator, model_validator
 
 
 class LocationData(BaseModel):
@@ -14,31 +14,56 @@ class LocationData(BaseModel):
 
 
 class AnalyzeRequest(BaseModel):
-    text: str = Field(
-        ...,
-        min_length=3,
+    text: Optional[str] = Field(
+        default=None,
         description="Free-form symptom description from the user.",
+    )
+    voice_text: Optional[str] = Field(
+        default=None,
+        description="Speech-to-text transcript when symptoms arrive by voice.",
     )
     session_id: str = Field(
         default_factory=lambda: f"session-{uuid.uuid4().hex[:12]}",
         description="Server-generated session identifier when not provided.",
     )
     language: str = Field(
-        default="en",
-        description="ISO language code. MVP stores it as metadata only.",
+        default="auto",
+        description="ISO language code or 'auto' for script-based detection.",
     )
     channel: Literal["web", "mobile", "whatsapp", "api"] = Field(
         default="web",
         description="Source channel for the request.",
     )
+    location: Optional[LocationData] = Field(
+        default=None,
+        description="Optional user location for PHC / hospital recommendation.",
+    )
 
     @field_validator("text")
     @classmethod
-    def validate_text(cls, value: str) -> str:
+    def validate_text(cls, value: Optional[str]) -> Optional[str]:
+        if value is None:
+            return value
         cleaned = value.strip()
         if len(cleaned) < 3:
             raise ValueError("text must contain at least 3 non-space characters")
         return cleaned
+
+    @field_validator("voice_text")
+    @classmethod
+    def validate_voice_text(cls, value: Optional[str]) -> Optional[str]:
+        if value is None:
+            return value
+        cleaned = value.strip()
+        if len(cleaned) < 3:
+            raise ValueError("voice_text must contain at least 3 non-space characters")
+        return cleaned
+
+    @model_validator(mode="after")
+    def validate_input_sources(self) -> "AnalyzeRequest":
+        if not self.text and not self.voice_text:
+            raise ValueError("At least one input is required: text or voice_text")
+        return self
 
 
 class WhatsAppWebhookRequest(BaseModel):

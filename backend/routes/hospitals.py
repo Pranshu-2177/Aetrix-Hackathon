@@ -1,25 +1,28 @@
 """
-SwasthAI — /hospitals/nearby Endpoint
-Returns nearest hospitals based on user's GPS coordinates.
+SwasthAI — /facilities/nearby Endpoint
+Returns nearest PHCs and hospitals based on user's GPS coordinates and urgency tier.
 """
+
+from __future__ import annotations
 
 from fastapi import APIRouter, Query
 from typing import List
-from models.response import HospitalInfo
-from services.hospitals_service import find_nearest_hospitals
+
+from backend.models.response import FacilityInfo
+from backend.services.hospitals_service import find_nearest_facilities
 
 router = APIRouter()
 
 
-@router.get("/hospitals/nearby", response_model=List[HospitalInfo])
-async def get_nearby_hospitals(
+@router.get("/facilities/nearby", response_model=List[FacilityInfo])
+@router.get("/hospitals/nearby", response_model=List[FacilityInfo], include_in_schema=False)
+async def get_nearby_facilities(
     lat: float = Query(..., description="User latitude"),
     lng: float = Query(..., description="User longitude"),
+    triage: str = Query("clinic", description="self-care, clinic, or emergency"),
     limit: int = Query(5, description="Number of hospitals to return", ge=1, le=20)
 ):
     """
-    Returns the nearest hospitals based on the user's GPS location.
-    Uses Haversine formula for distance calculation.
+    Returns the nearest recommended facilities for the user's triage level.
     """
-    hospitals = await find_nearest_hospitals(lat, lng, limit)
-    return hospitals
+    return await find_nearest_facilities(lat, lng, triage_level=triage, limit=limit)

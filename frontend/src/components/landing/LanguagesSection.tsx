@@ -3,7 +3,7 @@ import { LANGUAGES } from '@/lib/types';
 
 export default function LanguagesSection() {
   return (
-    <section className="py-24 md:py-32 bg-teal-lightest">
+    <section id="languages" className="py-24 md:py-32 bg-teal-lightest">
       <div className="container mx-auto px-4 text-center">
         <motion.h2
           initial={{ y: 20, opacity: 0 }}
@@ -12,7 +12,7 @@ export default function LanguagesSection() {
           transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
           className="text-3xl md:text-4xl font-heading font-bold text-foreground text-balance"
         >
-          Speak in Your Language
+          Speak In Your Own Language
         </motion.h2>
         <motion.p
           initial={{ y: 15, opacity: 0 }}
@@ -21,7 +21,7 @@ export default function LanguagesSection() {
           transition={{ duration: 0.6, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
           className="mt-4 text-muted-foreground text-lg"
         >
-          SwasthAI understands you, no matter which language you speak
+          You do not need difficult English. Use the language you are comfortable with.
         </motion.p>
 
         <div className="flex flex-wrap justify-center gap-4 mt-12">

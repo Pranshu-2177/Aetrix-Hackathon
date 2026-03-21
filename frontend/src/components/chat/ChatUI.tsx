@@ -1,30 +1,38 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Shield } from 'lucide-react';
+import { MapPin, Shield } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 import MessageBubble from './MessageBubble';
 import InputBar from './InputBar';
 import QuickSymptomButtons from './QuickSymptomButtons';
 import LanguageSelector from './LanguageSelector';
 import EmergencyAlert from './EmergencyAlert';
-import { getMockResponse } from '@/lib/api';
-import type { Message, Language, TriageData } from '@/lib/types';
+import { analyzeSymptoms, getOrCreateSessionId } from '@/lib/api';
+import { UI_STRINGS, type AnalyzeRequest, type Language, type LocationData, type Message, type TriageData } from '@/lib/types';
 
-const welcomeMessage: Message = {
-  id: 'welcome',
-  role: 'bot',
-  type: 'text',
-  content: '🩺 Welcome to SwasthAI!\nTell me your symptoms — type, speak, or send an image.\nI can help in English, Hindi, Gujarati, Marathi, and Tamil.',
-  timestamp: new Date(),
-};
+type LocationStatus = 'idle' | 'loading' | 'ready' | 'blocked';
 
-export default function ChatUI() {
-  const navigate = useNavigate();
-  const [messages, setMessages] = useState<Message[]>([welcomeMessage]);
+interface ChatUIProps {
+  embedded?: boolean;
+}
+
+export default function ChatUI({ embedded = false }: ChatUIProps) {
   const [language, setLanguage] = useState<Language>('en');
+  const [messages, setMessages] = useState<Message[]>([
+    {
+      id: 'welcome',
+      role: 'bot',
+      type: 'text',
+      content: UI_STRINGS.en.welcome,
+      timestamp: new Date(),
+    },
+  ]);
   const [isLoading, setIsLoading] = useState(false);
   const [emergency, setEmergency] = useState<string | null>(null);
+  const [location, setLocation] = useState<LocationData | null>(null);
+  const [locationStatus, setLocationStatus] = useState<LocationStatus>('idle');
+  const [sessionId] = useState(() => getOrCreateSessionId());
   const scrollRef = useRef<HTMLDivElement>(null);
+  const ui = UI_STRINGS[language];
 
   const scrollToBottom = () => {
     setTimeout(() => scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' }), 50);
@@ -32,91 +40,145 @@ export default function ChatUI() {
 
   useEffect(scrollToBottom, [messages]);
 
-  const processResponse = useCallback((text: string) => {
+  const requestLocation = useCallback(() => {
+    if (!navigator.geolocation) {
+      setLocationStatus('blocked');
+      return;
+    }
+
+    setLocationStatus('loading');
+    navigator.geolocation.getCurrentPosition(
+      ({ coords }) => {
+        setLocation({ lat: coords.latitude, lng: coords.longitude });
+        setLocationStatus('ready');
+      },
+      () => {
+        setLocationStatus('blocked');
+      },
+      {
+        enableHighAccuracy: false,
+        timeout: 8000,
+        maximumAge: 300000,
+      },
+    );
+  }, []);
+
+  const processResponse = useCallback(async (payload: Pick<AnalyzeRequest, 'text' | 'voice_text'>) => {
     setIsLoading(true);
-    setTimeout(() => {
-      const resp = getMockResponse(text);
+    try {
+      const resp = await analyzeSymptoms({
+        ...payload,
+        language,
+        session_id: sessionId,
+        channel: 'web',
+        location: location ?? undefined,
+      });
+
+      const responseLanguage = resp.language in UI_STRINGS ? resp.language : language;
+      const responseUi = UI_STRINGS[responseLanguage];
+      const triageData: TriageData = {
+        triage: resp.triage,
+        reason: resp.reason,
+        confidence: resp.confidence,
+        recommendedActions: resp.recommended_actions,
+        disclaimer: resp.disclaimer,
+        facilities: resp.facilities,
+        language: responseLanguage,
+      };
+
       const newMessages: Message[] = [];
 
-      // Triage message
       newMessages.push({
         id: crypto.randomUUID(),
         role: 'bot',
         type: 'triage',
         content: resp.reason,
-        data: { triage: resp.triage, reason: resp.reason, confidence: resp.confidence, remedies: resp.remedies } as TriageData,
+        data: triageData,
+        language: responseLanguage,
         timestamp: new Date(),
       });
 
-      // Remedies
-      if (resp.remedies.length) {
+      if (resp.recommended_actions.length) {
         newMessages.push({
           id: crypto.randomUUID(),
           role: 'bot',
-          type: 'remedies',
-          content: 'Here are some recommendations:',
-          data: { triage: resp.triage, reason: resp.reason, confidence: resp.confidence, remedies: resp.remedies } as TriageData,
+          type: 'actions',
+          content: responseUi.actionsTitle,
+          data: triageData,
+          language: responseLanguage,
           timestamp: new Date(),
         });
       }
 
-      // Emergency
-      if (resp.triage === 'emergency') {
+      if (resp.facilities.length) {
+        newMessages.push({
+          id: crypto.randomUUID(),
+          role: 'bot',
+          type: 'facilities',
+          content: responseUi.facilitiesTitle,
+          data: resp.facilities,
+          language: responseLanguage,
+          timestamp: new Date(),
+        });
+      }
+
+      if (resp.is_emergency) {
         setEmergency(resp.reason);
         if (navigator.vibrate) navigator.vibrate(500);
-      }
-
-      // Hospitals
-      if (resp.hospitals?.length) {
-        newMessages.push({
-          id: crypto.randomUUID(),
-          role: 'bot',
-          type: 'hospitals',
-          content: 'Nearby hospitals:',
-          data: resp.hospitals,
-          timestamp: new Date(),
-        });
-      }
-
-      // Report
-      if (resp.report) {
-        newMessages.push({
-          id: crypto.randomUUID(),
-          role: 'bot',
-          type: 'report',
-          content: 'Here is your summary report:',
-          data: resp.report,
-          timestamp: new Date(),
-        });
+      } else {
+        setEmergency(null);
       }
 
       setMessages(prev => [...prev, ...newMessages]);
+    } catch (error) {
+      const detail = error instanceof Error ? error.message : 'Unable to reach the backend right now.';
+      setMessages(prev => [...prev, {
+        id: crypto.randomUUID(),
+        role: 'bot',
+        type: 'text',
+        content: `${ui.apiError} ${detail}`,
+        timestamp: new Date(),
+      }]);
+    } finally {
       setIsLoading(false);
-    }, 1200);
-  }, []);
+    }
+  }, [language, location, sessionId, ui.apiError]);
 
   const handleSendText = (text: string) => {
     setMessages(prev => [...prev, {
       id: crypto.randomUUID(), role: 'user', type: 'text', content: text, timestamp: new Date(),
     }]);
-    processResponse(text);
+    void processResponse({ text });
   };
 
-  const handleSendImage = (base64: string) => {
+  const handleBotNotice = (text: string) => {
     setMessages(prev => [...prev, {
-      id: crypto.randomUUID(), role: 'user', type: 'text', content: 'Sent an image for analysis', imageUrl: base64, timestamp: new Date(),
+      id: crypto.randomUUID(),
+      role: 'bot',
+      type: 'text',
+      content: text,
+      timestamp: new Date(),
     }]);
-    processResponse('wound analysis from image');
+  };
+
+  const handleSendImage = (_base64: string) => handleBotNotice('Image upload is not connected yet in this MVP.');
+
+  const handleSendVoice = (voiceText: string) => {
+    setMessages(prev => [...prev, {
+      id: crypto.randomUUID(),
+      role: 'user',
+      type: 'text',
+      content: voiceText,
+      timestamp: new Date(),
+    }]);
+    void processResponse({ voice_text: voiceText });
   };
 
   return (
-    <div className="h-screen flex flex-col bg-background">
+    <div className={`${embedded ? 'min-h-[760px] rounded-[28px] border border-border bg-background shadow-[0_24px_60px_rgba(7,45,50,0.08)] overflow-hidden' : 'h-screen'} flex flex-col bg-background`}>
       {/* Header */}
       <div className="bg-navy px-4 py-3 flex items-center justify-between flex-shrink-0">
         <div className="flex items-center gap-3">
-          <button onClick={() => navigate('/')} className="text-primary-foreground/70 hover:text-primary-foreground" aria-label="Go back">
-            <ArrowLeft className="w-5 h-5" />
-          </button>
           <div className="flex items-center gap-2">
             <div className="w-7 h-7 rounded-lg gradient-cta flex items-center justify-center">
               <Shield className="w-3.5 h-3.5 text-accent-foreground" />
@@ -134,9 +196,36 @@ export default function ChatUI() {
 
       {/* Messages */}
       <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 py-6 space-y-4">
+        <div className="rounded-2xl border border-border bg-card px-4 py-3 text-sm">
+          <div className="flex items-center gap-3">
+            <div className="rounded-full bg-teal/10 p-2 text-teal">
+              <MapPin className="h-4 w-4" />
+            </div>
+            <div className="flex-1">
+              <p className="font-medium text-foreground">{ui.locationPrompt}</p>
+              {locationStatus === 'ready' && (
+                <p className="text-xs text-muted-foreground">{ui.locationReady}</p>
+              )}
+              {locationStatus === 'blocked' && (
+                <p className="text-xs text-muted-foreground">{ui.locationBlocked}</p>
+              )}
+            </div>
+            {locationStatus !== 'ready' && (
+              <button
+                type="button"
+                onClick={requestLocation}
+                className="rounded-full bg-teal px-3 py-1.5 text-xs font-medium text-accent-foreground transition hover:bg-teal/90 disabled:cursor-not-allowed disabled:opacity-60"
+                disabled={locationStatus === 'loading'}
+              >
+                {locationStatus === 'loading' ? '...' : ui.enableLocation}
+              </button>
+            )}
+          </div>
+        </div>
+
         {/* Quick symptoms on mobile */}
         <div className="md:hidden mb-4">
-          <QuickSymptomButtons onSelect={handleSendText} />
+          <QuickSymptomButtons onSelect={handleSendText} language={language} />
         </div>
 
         {messages.map(msg => (
@@ -163,8 +252,14 @@ export default function ChatUI() {
       <InputBar
         onSendText={handleSendText}
         onSendImage={handleSendImage}
-        onSendVoice={handleSendText}
+        onSendVoice={handleSendVoice}
+        onVoiceUnavailable={() => handleBotNotice(ui.voiceUnavailable)}
         disabled={isLoading}
+        enableVoice
+        enableImage={false}
+        language={language}
+        placeholder={ui.placeholder}
+        listeningLabel={`${ui.listening}...`}
       />
     </div>
   );
