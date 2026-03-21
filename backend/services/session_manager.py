@@ -6,6 +6,10 @@ import uuid
 from datetime import datetime, timezone
 from typing import Dict, Optional
 
+from backend.services.database import create_session as create_session_record
+from backend.services.database import get_session as get_persisted_session
+from backend.services.database import save_message as save_message_record
+
 _sessions: Dict[str, dict] = {}
 _whatsapp_sessions: Dict[str, str] = {}
 
@@ -15,7 +19,7 @@ def _utc_now() -> str:
 
 
 async def get_or_create_session(session_id: str, channel: str = "web", language: str = "en") -> dict:
-    """Return an existing session or create a new one in memory."""
+    """Return an existing session or create one in memory and Supabase."""
     if session_id not in _sessions:
         _sessions[session_id] = {
             "session_id": session_id,
@@ -24,6 +28,7 @@ async def get_or_create_session(session_id: str, channel: str = "web", language:
             "created_at": _utc_now(),
             "messages": [],
         }
+        await create_session_record(session_id=session_id, channel=channel, language=language)
     return _sessions[session_id]
 
 
@@ -37,7 +42,7 @@ async def get_or_create_whatsapp_session(phone_number: str) -> str:
 
 
 async def add_message(session_id: str, role: str, content: str) -> None:
-    """Append a message to the session transcript."""
+    """Append a message to the in-memory transcript and persist it when available."""
     session = await get_or_create_session(session_id)
     session["messages"].append(
         {
@@ -46,8 +51,11 @@ async def add_message(session_id: str, role: str, content: str) -> None:
             "timestamp": _utc_now(),
         }
     )
+    await save_message_record(session_id=session_id, role=role, content=content)
 
 
 async def get_session(session_id: str) -> Optional[dict]:
-    """Return stored session metadata for debugging or future persistence."""
-    return _sessions.get(session_id)
+    """Return stored session metadata, falling back to Supabase when needed."""
+    if session_id in _sessions:
+        return _sessions.get(session_id)
+    return await get_persisted_session(session_id)

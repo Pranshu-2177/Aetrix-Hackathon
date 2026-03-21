@@ -4,8 +4,11 @@ Supabase helpers for storing sessions, messages, triage results, and symptoms.
 Falls back silently when Supabase is not configured (local dev).
 """
 
-from typing import Optional, List, Dict
-from config import settings
+from __future__ import annotations
+
+from typing import Dict, Optional
+
+from backend.config import settings
 
 
 def _get_client():
@@ -20,24 +23,32 @@ def _get_client():
         return None
 
 
-async def create_session(session_id: str, channel: str, language: str, location: Optional[dict] = None):
+async def create_session(
+    session_id: str,
+    channel: str,
+    language: str,
+    location: Optional[dict] = None,
+) -> None:
     """Store a new session in the database."""
     client = _get_client()
     if not client:
         return
 
     try:
-        client.table("sessions").upsert({
+        payload = {
             "session_id": session_id,
             "channel": channel,
             "language": language,
-            "location": location,
-        }).execute()
+        }
+        if location is not None:
+            payload["location"] = location
+
+        client.table("sessions").upsert(payload).execute()
     except Exception as e:
         print(f"[Database] Error creating session: {e}")
 
 
-async def save_message(session_id: str, role: str, content: str):
+async def save_message(session_id: str, role: str, content: str) -> None:
     """Save a chat message to the database."""
     client = _get_client()
     if not client:
@@ -53,8 +64,8 @@ async def save_message(session_id: str, role: str, content: str):
         print(f"[Database] Error saving message: {e}")
 
 
-async def save_triage_result(session_id: str, triage_level: str, confidence: float, reason: str):
-    """Store an AI triage result."""
+async def save_triage_result(session_id: str, triage_level: str, confidence: float, reason: str) -> None:
+    """Store a triage result."""
     client = _get_client()
     if not client:
         return
@@ -62,27 +73,12 @@ async def save_triage_result(session_id: str, triage_level: str, confidence: flo
     try:
         client.table("triage_results").insert({
             "session_id": session_id,
-            "triage_level": triage_level,
+            "triage": triage_level,
             "confidence": confidence,
             "reason": reason,
         }).execute()
     except Exception as e:
         print(f"[Database] Error saving triage result: {e}")
-
-
-async def save_symptom_log(session_id: str, symptoms: List[str]):
-    """Log extracted symptoms."""
-    client = _get_client()
-    if not client:
-        return
-
-    try:
-        client.table("symptom_logs").insert({
-            "session_id": session_id,
-            "symptoms": symptoms,
-        }).execute()
-    except Exception as e:
-        print(f"[Database] Error saving symptom log: {e}")
 
 
 async def get_session(session_id: str) -> Optional[Dict]:

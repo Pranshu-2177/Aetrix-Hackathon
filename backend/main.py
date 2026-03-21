@@ -38,6 +38,7 @@ async def health_check() -> dict:
         "version": settings.APP_VERSION,
         "mode": "rule-based",
         "deepgram_configured": settings.has_deepgram,
+        "google_translate_configured": settings.has_google_translate,
     }
 
 

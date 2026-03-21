@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { MapPin, Shield } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
+import AshaCaseForm from './AshaCaseForm';
 import MessageBubble from './MessageBubble';
 import InputBar from './InputBar';
 import QuickSymptomButtons from './QuickSymptomButtons';
@@ -10,19 +11,22 @@ import { analyzeSymptoms, getOrCreateSessionId } from '@/lib/api';
 import { UI_STRINGS, type AnalyzeRequest, type Language, type LocationData, type Message, type TriageData } from '@/lib/types';
 
 type LocationStatus = 'idle' | 'loading' | 'ready' | 'blocked';
+type ChatMode = 'patient' | 'asha';
 
 interface ChatUIProps {
   embedded?: boolean;
+  initialWelcome?: string;
+  mode?: ChatMode;
 }
 
-export default function ChatUI({ embedded = false }: ChatUIProps) {
+export default function ChatUI({ embedded = false, initialWelcome, mode = 'patient' }: ChatUIProps) {
   const [language, setLanguage] = useState<Language>('en');
-  const [messages, setMessages] = useState<Message[]>([
+  const [messages, setMessages] = useState<Message[]>(() => [
     {
       id: 'welcome',
       role: 'bot',
       type: 'text',
-      content: UI_STRINGS.en.welcome,
+      content: initialWelcome || UI_STRINGS.en.welcome,
       timestamp: new Date(),
     },
   ]);
@@ -33,6 +37,7 @@ export default function ChatUI({ embedded = false }: ChatUIProps) {
   const [sessionId] = useState(() => getOrCreateSessionId());
   const scrollRef = useRef<HTMLDivElement>(null);
   const ui = UI_STRINGS[language];
+  const isAshaMode = mode === 'asha';
 
   const scrollToBottom = () => {
     setTimeout(() => scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' }), 50);
@@ -175,7 +180,7 @@ export default function ChatUI({ embedded = false }: ChatUIProps) {
   };
 
   return (
-    <div className={`${embedded ? 'min-h-[760px] rounded-[28px] border border-border bg-background shadow-[0_24px_60px_rgba(7,45,50,0.08)] overflow-hidden' : 'h-screen'} flex flex-col bg-background`}>
+    <div className={`${embedded ? 'h-full min-h-0 rounded-[28px] border border-border bg-background shadow-[0_24px_60px_rgba(7,45,50,0.08)] overflow-hidden' : 'h-screen'} flex flex-col bg-background`}>
       {/* Header */}
       <div className="bg-navy px-4 py-3 flex items-center justify-between flex-shrink-0">
         <div className="flex items-center gap-3">
@@ -223,10 +228,15 @@ export default function ChatUI({ embedded = false }: ChatUIProps) {
           </div>
         </div>
 
-        {/* Quick symptoms on mobile */}
-        <div className="md:hidden mb-4">
-          <QuickSymptomButtons onSelect={handleSendText} language={language} />
-        </div>
+        {isAshaMode ? (
+          <div className="mb-4">
+            <AshaCaseForm onSubmitCase={handleSendText} disabled={isLoading} />
+          </div>
+        ) : (
+          <div className="mb-4 md:hidden">
+            <QuickSymptomButtons onSelect={handleSendText} language={language} />
+          </div>
+        )}
 
         {messages.map(msg => (
           <MessageBubble key={msg.id} message={msg} />
@@ -258,7 +268,7 @@ export default function ChatUI({ embedded = false }: ChatUIProps) {
         enableVoice
         enableImage={false}
         language={language}
-        placeholder={ui.placeholder}
+        placeholder={isAshaMode ? 'Describe the patient case or use the case form above...' : ui.placeholder}
         listeningLabel={`${ui.listening}...`}
       />
     </div>

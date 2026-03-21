@@ -7,6 +7,7 @@ The current MVP only supports one honest path:
 - text symptom input
 - emergency keyword screening
 - AI or fallback triage classification
+- Google Translate integration with local fallback for `en`, `hi`, `gu`, `mr`, and `ta`
 - structured JSON response
 - Vite React frontend wired to the live backend
 
@@ -65,6 +66,14 @@ From the repo root:
 backend/venv/bin/python -m uvicorn backend.main:app --reload
 ```
 
+If you want real translation and Supabase writes, set these in your `.env`:
+
+```env
+GOOGLE_TRANSLATE_API_KEY=your_google_translate_api_key
+SUPABASE_URL=your_supabase_url
+SUPABASE_KEY=your_supabase_service_role_key
+```
+
 If you are not using the checked-in virtual environment, install dependencies first:
 
 ```bash
@@ -106,8 +115,6 @@ Example response:
 
 - voice input and speech-to-text
 - image upload and image analysis
-- translation pipeline
 - hospital search tied to real map APIs
 - text-to-speech responses
-- database persistence
 - analytics

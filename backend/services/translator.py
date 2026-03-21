@@ -1,11 +1,17 @@
-"""Zero-cost local language detection, normalization, and response localization."""
+"""Google-backed translation helpers with local fallbacks for rural MVP use."""
 
 from __future__ import annotations
 
+import html
 import re
 from typing import Dict, List, Optional
 
+import httpx
+
+from backend.config import settings
+
 SUPPORTED_LANGUAGES = {"en", "hi", "gu", "mr", "ta"}
+GOOGLE_TRANSLATE_URL = "https://translation.googleapis.com/language/translate/v2"
 
 TERM_MAP: Dict[str, Dict[str, str]] = {
     "hi": {
@@ -176,8 +182,13 @@ def _contains_script(text: str, start: str, end: str) -> bool:
     return bool(re.search(f"[{start}-{end}]", text))
 
 
-async def detect_language(text: str) -> str:
-    """Detect language using script ranges and a few marker words."""
+def _normalize_language_code(language: Optional[str]) -> str:
+    if not language:
+        return "en"
+    return language.strip().lower().replace("_", "-").split("-")[0]
+
+
+def _local_detect_language(text: str) -> str:
     if not text.strip():
         return "en"
 
@@ -194,14 +205,90 @@ async def detect_language(text: str) -> str:
     return "en"
 
 
+async def _google_detect_language(text: str) -> Optional[str]:
+    if not settings.has_google_translate or not text.strip():
+        return None
+
+    try:
+        async with httpx.AsyncClient(timeout=8.0) as client:
+            response = await client.post(
+                f"{GOOGLE_TRANSLATE_URL}/detect",
+                params={
+                    "q": text,
+                    "key": settings.GOOGLE_TRANSLATE_API_KEY,
+                },
+            )
+            response.raise_for_status()
+    except Exception as exc:
+        print(f"[Translator] Google language detection failed: {exc}")
+        return None
+
+    detections = response.json().get("data", {}).get("detections", [])
+    if not detections or not detections[0]:
+        return None
+
+    detected = _normalize_language_code(detections[0][0].get("language"))
+    return detected if detected in SUPPORTED_LANGUAGES else None
+
+
+async def _google_translate_texts(
+    texts: List[str],
+    target_lang: str,
+    source_lang: Optional[str] = None,
+) -> Optional[List[str]]:
+    cleaned_texts = [text for text in texts if text.strip()]
+    if not settings.has_google_translate or not cleaned_texts:
+        return None
+
+    params: List[tuple[str, str]] = [
+        ("target", target_lang),
+        ("format", "text"),
+        ("key", settings.GOOGLE_TRANSLATE_API_KEY),
+    ]
+    params.extend(("q", text) for text in texts)
+
+    normalized_source = _normalize_language_code(source_lang)
+    if source_lang and normalized_source:
+        params.append(("source", normalized_source))
+
+    try:
+        async with httpx.AsyncClient(timeout=10.0) as client:
+            response = await client.post(GOOGLE_TRANSLATE_URL, params=params)
+            response.raise_for_status()
+    except Exception as exc:
+        print(f"[Translator] Google translation failed: {exc}")
+        return None
+
+    translations = response.json().get("data", {}).get("translations", [])
+    translated_texts = [
+        html.unescape(item.get("translatedText", "")).strip()
+        for item in translations
+    ]
+    if len(translated_texts) != len(texts) or any(not text for text in translated_texts):
+        return None
+    return translated_texts
+
+
+async def detect_language(text: str) -> str:
+    """Detect language using script ranges and a few marker words."""
+    google_detected = await _google_detect_language(text)
+    if google_detected:
+        return google_detected
+    return _local_detect_language(text)
+
+
 async def translate_to_english(text: str, source_lang: Optional[str] = None) -> str:
     """Normalize supported regional-language symptom phrases into English concepts."""
     if not text.strip():
         return text
 
-    language = source_lang or await detect_language(text)
+    language = _normalize_language_code(source_lang) if source_lang else await detect_language(text)
     if language == "en":
         return text
+
+    google_translation = await _google_translate_texts([text], target_lang="en", source_lang=language)
+    if google_translation:
+        return google_translation[0]
 
     normalized = text.lower()
     replacements = TERM_MAP.get(language, {})
@@ -212,12 +299,25 @@ async def translate_to_english(text: str, source_lang: Optional[str] = None) -> 
 
 async def translate_from_english(text: str, target_lang: str) -> str:
     """Localize known response phrases back into the user's language."""
-    if target_lang == "en" or target_lang not in SUPPORTED_LANGUAGES:
+    normalized_target = _normalize_language_code(target_lang)
+    if normalized_target == "en" or normalized_target not in SUPPORTED_LANGUAGES:
         return text
 
-    return STATIC_TRANSLATIONS.get(target_lang, {}).get(text, text)
+    google_translation = await _google_translate_texts([text], target_lang=normalized_target, source_lang="en")
+    if google_translation:
+        return google_translation[0]
+
+    return STATIC_TRANSLATIONS.get(normalized_target, {}).get(text, text)
 
 
 async def translate_text_list(texts: List[str], target_lang: str) -> List[str]:
     """Localize a list of response strings."""
-    return [await translate_from_english(text, target_lang) for text in texts]
+    normalized_target = _normalize_language_code(target_lang)
+    if normalized_target == "en" or normalized_target not in SUPPORTED_LANGUAGES:
+        return texts
+
+    google_translation = await _google_translate_texts(texts, target_lang=normalized_target, source_lang="en")
+    if google_translation:
+        return google_translation
+
+    return [await translate_from_english(text, normalized_target) for text in texts]

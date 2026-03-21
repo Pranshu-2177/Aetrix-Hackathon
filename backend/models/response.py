@@ -24,6 +24,7 @@ class FacilityInfo(BaseModel):
 class AnalyzeResponse(BaseModel):
     session_id: str = Field(..., description="Server-side session identifier")
     language: str = Field(..., description="Detected or selected response language")
+    disease: Optional[str] = Field(default=None, description="Predicted disease from symptom matching.")
     triage: Literal["self-care", "clinic", "emergency"] = Field(
         ...,
         description="Urgency classification for the reported symptoms.",

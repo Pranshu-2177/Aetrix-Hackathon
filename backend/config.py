@@ -21,6 +21,12 @@ class Settings:
     GROQ_API_KEY: str = os.getenv("GROQ_API_KEY", "")
     GROQ_MODEL: str = os.getenv("GROQ_MODEL", "llama-3.3-70b-versatile")
     DEEPGRAM_API_KEY: str = os.getenv("DEEPGRAM_API_KEY", "")
+    GOOGLE_TRANSLATE_API_KEY: str = os.getenv("GOOGLE_TRANSLATE_API_KEY", "")
+    SUPABASE_URL: str = os.getenv("SUPABASE_URL", os.getenv("NEXT_PUBLIC_SUPABASE_URL", ""))
+    SUPABASE_KEY: str = os.getenv(
+        "SUPABASE_KEY",
+        os.getenv("SUPABASE_SERVICE_ROLE_KEY", os.getenv("SUPABASE_ANON_KEY", "")),
+    )
 
     CORS_ORIGINS_RAW: str = os.getenv("CORS_ORIGINS", "*")
 
@@ -31,6 +37,14 @@ class Settings:
     @property
     def has_deepgram(self) -> bool:
         return bool(self.DEEPGRAM_API_KEY)
+
+    @property
+    def has_google_translate(self) -> bool:
+        return bool(self.GOOGLE_TRANSLATE_API_KEY)
+
+    @property
+    def has_supabase(self) -> bool:
+        return bool(self.SUPABASE_URL and self.SUPABASE_KEY)
 
     @property
     def cors_origins(self) -> List[str]:

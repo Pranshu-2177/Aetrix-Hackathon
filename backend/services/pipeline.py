@@ -2,10 +2,13 @@
 
 from __future__ import annotations
 
+from backend.ai.disease_predictor import predict_disease
 from backend.ai.emergency import check_emergency_from_text
+from backend.ai.symptom_extractor_dataset import extract_symptoms_from_text
 from backend.ai.triage import run_triage
 from backend.models.request import AnalyzeRequest
 from backend.models.response import AnalyzeResponse
+from backend.services.database import save_triage_result
 from backend.services.hospitals_service import find_nearest_facilities
 from backend.services.session_manager import add_message, get_or_create_session
 from backend.services.translator import detect_language, translate_from_english, translate_text_list, translate_to_english
@@ -34,6 +37,8 @@ async def run_pipeline(request: AnalyzeRequest) -> AnalyzeResponse:
 
     emergency_result = check_emergency_from_text(normalized_text)
     if emergency_result["is_emergency"]:
+        symptoms_dict, _ = extract_symptoms_from_text(normalized_text)
+        disease = predict_disease(symptoms_dict)
         localized_reason = await translate_from_english(str(emergency_result["reason"]), detected_language)
         localized_actions = await translate_text_list(EMERGENCY_ACTIONS, detected_language)
         localized_disclaimer = await translate_from_english(DEFAULT_DISCLAIMER, detected_language)
@@ -48,6 +53,7 @@ async def run_pipeline(request: AnalyzeRequest) -> AnalyzeResponse:
         response = AnalyzeResponse(
             session_id=request.session_id,
             language=detected_language,
+            disease=disease,
             triage="emergency",
             reason=localized_reason,
             confidence=0.99,
@@ -57,9 +63,18 @@ async def run_pipeline(request: AnalyzeRequest) -> AnalyzeResponse:
             disclaimer=localized_disclaimer,
         )
         await add_message(request.session_id, "assistant", response.reason)
+        await save_triage_result(
+            session_id=request.session_id,
+            triage_level=response.triage,
+            confidence=response.confidence,
+            reason=response.reason,
+        )
         return response
 
     triage_result = await run_triage(normalized_text)
+    symptoms_dict, _ = extract_symptoms_from_text(normalized_text)
+    disease = predict_disease(symptoms_dict)
+
     localized_reason = await translate_from_english(triage_result["reason"], detected_language)
     localized_actions = await translate_text_list(triage_result["recommended_actions"], detected_language)
     localized_disclaimer = await translate_from_english(DEFAULT_DISCLAIMER, detected_language)
@@ -74,6 +89,7 @@ async def run_pipeline(request: AnalyzeRequest) -> AnalyzeResponse:
     response = AnalyzeResponse(
         session_id=request.session_id,
         language=detected_language,
+        disease=disease,
         triage=triage_result["triage"],
         reason=localized_reason,
         confidence=triage_result["confidence"],
@@ -83,4 +99,10 @@ async def run_pipeline(request: AnalyzeRequest) -> AnalyzeResponse:
         disclaimer=localized_disclaimer,
     )
     await add_message(request.session_id, "assistant", response.reason)
+    await save_triage_result(
+        session_id=request.session_id,
+        triage_level=response.triage,
+        confidence=response.confidence,
+        reason=response.reason,
+    )
     return response

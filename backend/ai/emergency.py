@@ -6,7 +6,15 @@ from typing import Dict, List
 
 EMERGENCY_RULES = {
     "cardiac": {
-        "keywords": ["chest pain", "crushing chest pain", "heart pain", "chest tightness"],
+        "keywords": [
+            "heart attack",
+            "myocardial infarction",
+            "cardiac arrest",
+            "chest pain",
+            "crushing chest pain",
+            "heart pain",
+            "chest tightness",
+        ],
         "reason": "Possible cardiac emergency. Call 108 or go to the nearest emergency department now.",
     },
     "respiratory": {
@@ -22,7 +30,16 @@ EMERGENCY_RULES = {
         "reason": "Loss of consciousness or seizures require emergency evaluation immediately.",
     },
     "stroke": {
-        "keywords": ["face drooping", "arm weakness", "speech difficulty", "sudden confusion", "paralysis"],
+        "keywords": [
+            "stroke",
+            "brain stroke",
+            "cva",
+            "face drooping",
+            "arm weakness",
+            "speech difficulty",
+            "sudden confusion",
+            "paralysis",
+        ],
         "reason": "Possible stroke. Emergency treatment is time-critical, so seek immediate care.",
     },
 }
