@@ -18,11 +18,6 @@ export default function LoginPage() {
   const handleRoleSelect = async (role: UserRole) => {
     const currentRole = (user?.user_metadata?.role as UserRole | undefined) ?? null;
 
-    if (role === 'patient') {
-      navigate('/patients');
-      return;
-    }
-
     if (!user) {
       navigate(`/auth?role=${role}`);
       return;
@@ -43,7 +38,7 @@ export default function LoginPage() {
       description: 'Get AI-driven health triage and support for you and your loved ones.',
       icon: <User className="h-8 w-8 text-teal" />,
       role: 'patient' as UserRole,
-      buttonText: 'Start Chat',
+      buttonText: 'Login as Patient',
     },
     {
       title: 'ASHA Workers',

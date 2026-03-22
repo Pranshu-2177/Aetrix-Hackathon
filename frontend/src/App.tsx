@@ -24,7 +24,11 @@ const App = () => (
           <Route path="/auth" element={<AuthPage />} />
           <Route
             path="/patients"
-            element={<PatientsPage />}
+            element={(
+              <RequireAuth allow={["patient"]}>
+                <PatientsPage />
+              </RequireAuth>
+            )}
           />
           <Route
             path="/asha-workers"
