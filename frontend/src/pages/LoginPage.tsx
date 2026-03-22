@@ -16,15 +16,8 @@ export default function LoginPage() {
   }), []);
 
   const handleRoleSelect = async (role: UserRole) => {
-    const currentRole = (user?.user_metadata?.role as UserRole | undefined) ?? null;
-
     if (!user) {
       navigate(`/auth?role=${role}`);
-      return;
-    }
-
-    if (currentRole === role) {
-      navigate(rolePath[role], { replace: true });
       return;
     }
 
