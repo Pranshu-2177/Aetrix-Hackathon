@@ -1,6 +1,6 @@
 <h1 align="center">
   <br>
-  <img src="https://i.ibb.co/689LZYF/swasthai-logo.png" alt="SwasthAI Logo" width="200">
+  <img src="./logo.png" alt="SwasthAI Logo" width="200">
   <br>
   SwasthAI
   <br>
