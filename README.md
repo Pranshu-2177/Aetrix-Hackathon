@@ -40,22 +40,40 @@ In areas where doctor-to-patient ratios are drastically low and internet access 
 
 The application is split into specialized domains securely routed from the **Landing Portal**.
 
-### 1. Patient Chat Triage (B2C)
-* **Zero-typing Voice Input (Planned):** Built to accept local dialects via audio.
-* **Mixed-Script Mappings:** Users can type in native scripts (e.g., ગુજરાતી, हिंदी) or Latin-script transliterations (e.g., *mane tav aave chhe* -> "I have a fever").
-* **Instant Conversational AI:** The AI asks intuitive follow-up questions to gather more context if the initial symptom description is vague (e.g., "How long have you had this fever?").
-* **Geo-spatial Routing:** If triage dictates "Clinic" or "Emergency", the UI instantly displays the nearest Primary Health Centres (PHC) calculating the Haversine distance from the user's location.
+### 1. Landing Portal
+![Landing Portal](./docs/assets/landing-portal.png)
 
-### 2. ASHA Worker Dashboard (B2B)
-* **Worker Profile & Coverage Management:** ASHA workers register their assigned Village, Gram Panchayat, Block, District, and Household coverage numbers.
-* **Rapid Case Entry:** Designed for the field. The worker inputs the patient's name, age, days sick, and symptoms. 
-* **AI-Assisted Referral:** The integrated AI analyzes the input and recommends the safest triage result directly in the dropdown (e.g., Referral vs. Home Care), allowing the worker to override if necessary.
-* **Daily Metric Tracking:** Workers can see how many households they've visited today and how many referred cases are pending.
+The entry point of the application securely routes users to their specific domain: `Start Chat` for patients, `Login as ASHA Worker` for community health workers, and `Login as Admin` for district officers.
 
-### 3. District Admin Master Dashboard (B2G/Admin)
+### 2. Patient Chat Triage
+![Patient Chat Interface](./docs/assets/patient-chat.png)
+
+A highly intuitive, chat-based interface.
+* **Multilingual:** Users can type in native scripts (e.g., ગુજરાતી, हिंदी) or "Hinglish/Gujlish" (e.g., *mane tav aave chhe*).
+* **AI Analysis:** The Meta NLLB offline translations run and feed symptoms into Groq LLM (Llama 3), which instantly returns:
+  * Probable disease (based on extensive datasets).
+  * Triage urgency (Emergency / Clinic / Home care).
+  * Follow-up questions.
+* **Location Integration:** Instantly displays the nearest medical facilities using Haversine distance calculations based on the required triage level.
+
+
+
+### 3. ASHA Worker Dashboard
+![ASHA Worker Dashboard](./docs/assets/asha-worker.png)
+
+* **Profile & Coverage:** ASHA workers register their assigned Village, Block, District, and Household coverage numbers.
+* **Case Entry:** While visiting a home, the ASHA worker inputs the patient's name, age, days sick, and symptoms. The integrated AI instantly recommends the safest triage result (e.g., Referral vs Home Care) directly from the field.
+
+
+
+### 4. District Admin Master Dashboard
+![District Admin Dashboard](./docs/assets/district-admin.png)
+
 * **Worker Surveillance Matrix:** Real-time visibility into every ASHA worker's daily visits, submitted cases, and critical "Urgent" alerts across the district.
 * **Epidemiological Watchlist:** Tracks spikes in specific symptoms (like widespread fever/diarrhea in a specific block) enabling early warning systems for outbreaks (like Dengue or Cholera).
 * **Targeted Resource Deployment:** Enables Chief Medical Officers to deploy Mobile Medical Vans precisely where urgency metrics are spiking.
+
+
 
 ---
 
