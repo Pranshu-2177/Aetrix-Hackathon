@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { MapPin } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 import AshaCaseForm from './AshaCaseForm';
 import MessageBubble from './MessageBubble';
 import InputBar from './InputBar';
@@ -20,6 +21,7 @@ interface ChatUIProps {
 }
 
 export default function ChatUI({ embedded = false, initialWelcome, mode = 'patient' }: ChatUIProps) {
+  const navigate = useNavigate();
   const [language, setLanguage] = useState<Language>('en');
   const [messages, setMessages] = useState<Message[]>(() => [
     {
@@ -206,7 +208,14 @@ export default function ChatUI({ embedded = false, initialWelcome, mode = 'patie
       {/* Header */}
       <div className="bg-navy px-4 py-3 flex items-center justify-between flex-shrink-0">
         <div className="flex items-center gap-3">
-          <img src="/swasthai-logo-light.svg" alt="SwasthAI" className="h-8 w-auto md:h-9" />
+          <button
+            type="button"
+            className="transition hover:opacity-90"
+            onClick={() => navigate('/')}
+            aria-label="Back to role selection"
+          >
+            <img src="/swasthai-logo-light.svg" alt="SwasthAI" className="h-8 w-auto md:h-9" />
+          </button>
         </div>
         <LanguageSelector value={language} onChange={setLanguage} />
       </div>
