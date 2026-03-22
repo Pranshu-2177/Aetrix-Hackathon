@@ -1,26 +1,11 @@
-import { useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Shield, User, Stethoscope, ShieldCheck } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { useAuth, type UserRole } from '@/hooks/use-auth';
+import { type UserRole } from '@/hooks/use-auth';
 
 export default function LoginPage() {
   const navigate = useNavigate();
-  const { user, loading } = useAuth();
-
-  const rolePath = useMemo(() => ({
-    patient: '/patients',
-    asha: '/asha-workers',
-    admin: '/district-admin',
-  }), []);
-
-  useEffect(() => {
-    if (!loading && user) {
-      const role = (user.user_metadata?.role as UserRole | undefined) ?? 'patient';
-      navigate(rolePath[role], { replace: true });
-    }
-  }, [user, loading, navigate, rolePath]);
 
   const loginOptions = [
     {
