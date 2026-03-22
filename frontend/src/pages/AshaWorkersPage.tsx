@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { ClipboardList, HeartPulse, MapPinned, Siren, Users } from 'lucide-react';
+import { MapPinned } from 'lucide-react';
 import ChatUI from '@/components/chat/ChatUI';
 import RoleTabs from '@/components/roles/RoleTabs';
 import { Button } from '@/components/ui/button';
@@ -83,7 +83,6 @@ export default function AshaWorkersPage() {
   const [reports, setReports] = useState<CaseReportRecord[]>([]);
   const [profileForm, setProfileForm] = useState<ProfileFormState>(emptyProfileForm);
   const [caseForm, setCaseForm] = useState<CaseFormState>(emptyCaseForm);
-  const [loadingData, setLoadingData] = useState(true);
   const [profileStatus, setProfileStatus] = useState<{ error?: string; info?: string }>({});
   const [caseStatus, setCaseStatus] = useState<{ error?: string; info?: string }>({});
   const [savingProfile, setSavingProfile] = useState(false);
@@ -91,14 +90,12 @@ export default function AshaWorkersPage() {
 
   useEffect(() => {
     if (!user || !isConfigured) {
-      setLoadingData(false);
       return;
     }
 
     let active = true;
 
     const load = async () => {
-      setLoadingData(true);
       try {
         const [profileData, reportData] = await Promise.all([
           fetchProfile(user.id),
@@ -134,10 +131,6 @@ export default function AshaWorkersPage() {
             error: error instanceof Error ? error.message : 'Could not load worker data right now.',
           });
         }
-      } finally {
-        if (active) {
-          setLoadingData(false);
-        }
       }
     };
 
@@ -149,12 +142,6 @@ export default function AshaWorkersPage() {
 
   const villageSummaries = useMemo(() => buildAshaVillageSummary(reports, profile), [reports, profile]);
   const queueItems = useMemo(() => buildAshaQueue(reports), [reports]);
-
-  const totalHouseholds = villageSummaries.reduce((sum, item) => sum + item.households, 0);
-  const totalActiveCases = villageSummaries.reduce((sum, item) => sum + item.activeCases, 0);
-  const totalUrgentCases = villageSummaries.reduce((sum, item) => sum + item.urgentCases, 0);
-  const totalDueVisits = villageSummaries.reduce((sum, item) => sum + item.dueVisits, 0);
-  const displayName = profile?.full_name || user?.email?.split('@')[0]?.replace(/[._]/g, ' ') || 'ASHA worker';
 
   const handleProfileSave = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -251,47 +238,11 @@ export default function AshaWorkersPage() {
       <RoleTabs />
 
       <main className="mx-auto flex w-full max-w-7xl flex-1 flex-col gap-6 px-4 py-6 md:px-6">
-        <section className="rounded-[28px] border border-border bg-card p-6 shadow-[0_18px_48px_rgba(7,45,50,0.06)]">
-          <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
-            <div className="max-w-3xl">
-              <p className="text-sm font-semibold uppercase tracking-[0.2em] text-teal">ASHA Worker Dashboard</p>
-              <h1 className="mt-3 text-3xl font-heading font-bold text-foreground md:text-5xl">
-                Village view for {displayName}
-              </h1>
-              <p className="mt-4 text-base leading-relaxed text-muted-foreground md:text-lg">
-                Save your village details once, add patient cases through the form below, and keep the chat ready for quick triage support.
-              </p>
-              {!isConfigured && (
-                <p className="mt-4 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
-                  Supabase is not configured in the frontend, so live worker data cannot load yet.
-                </p>
-              )}
-            </div>
-
-            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-              <div className="rounded-2xl bg-muted/60 p-4">
-                <Users className="h-5 w-5 text-teal" />
-                <p className="mt-3 text-2xl font-bold text-foreground">{loadingData ? '...' : totalHouseholds}</p>
-                <p className="text-sm text-muted-foreground">Households covered</p>
-              </div>
-              <div className="rounded-2xl bg-muted/60 p-4">
-                <HeartPulse className="h-5 w-5 text-teal" />
-                <p className="mt-3 text-2xl font-bold text-foreground">{loadingData ? '...' : totalActiveCases}</p>
-                <p className="text-sm text-muted-foreground">Active cases</p>
-              </div>
-              <div className="rounded-2xl bg-muted/60 p-4">
-                <Siren className="h-5 w-5 text-teal" />
-                <p className="mt-3 text-2xl font-bold text-foreground">{loadingData ? '...' : totalUrgentCases}</p>
-                <p className="text-sm text-muted-foreground">Urgent referrals</p>
-              </div>
-              <div className="rounded-2xl bg-muted/60 p-4">
-                <ClipboardList className="h-5 w-5 text-teal" />
-                <p className="mt-3 text-2xl font-bold text-foreground">{loadingData ? '...' : totalDueVisits}</p>
-                <p className="text-sm text-muted-foreground">Visits due now</p>
-              </div>
-            </div>
-          </div>
-        </section>
+        {!isConfigured && (
+          <section className="rounded-[28px] border border-amber-200 bg-amber-50 px-5 py-4 text-sm text-amber-800">
+            Supabase is not configured in the frontend, so live worker data cannot load yet.
+          </section>
+        )}
 
         <section className="grid gap-6 xl:grid-cols-[0.95fr_1.05fr]">
           <div className="rounded-[28px] border border-border bg-card p-6 shadow-[0_18px_48px_rgba(7,45,50,0.06)]">
