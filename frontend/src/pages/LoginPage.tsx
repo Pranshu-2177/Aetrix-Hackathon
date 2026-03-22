@@ -50,14 +50,14 @@ export default function LoginPage() {
       description: 'Access tools for community health workers to triage and report cases.',
       icon: <Stethoscope className="h-8 w-8 text-teal" />,
       role: 'asha' as UserRole,
-      buttonText: 'Sign in as ASHA Worker',
+      buttonText: 'Login as ASHA Worker',
     },
     {
-      title: 'District Health Leads',
-      description: 'See district-wide village trends, ASHA worker activity, and urgent referrals in one place.',
+      title: 'District Admins',
+      description: 'Monitor health trends and manage healthcare resources in your district.',
       icon: <ShieldCheck className="h-8 w-8 text-teal" />,
       role: 'admin' as UserRole,
-      buttonText: 'Sign in as District Lead',
+      buttonText: 'Login as Admin',
     },
   ];
 
