@@ -41,13 +41,9 @@ In areas where doctor-to-patient ratios are drastically low and internet access 
 The application is split into specialized domains securely routed from the **Landing Portal**.
 
 ### 1. Landing Portal
-![Landing Portal](./docs/assets/landing-portal.png)
-
 The entry point of the application securely routes users to their specific domain: `Start Chat` for patients, `Login as ASHA Worker` for community health workers, and `Login as Admin` for district officers.
 
 ### 2. Patient Chat Triage
-![Patient Chat Interface](./docs/assets/patient-chat.png)
-
 A highly intuitive, chat-based interface.
 * **Multilingual:** Users can type in native scripts (e.g., ગુજરાતી, हिंदी) or "Hinglish/Gujlish" (e.g., *mane tav aave chhe*).
 * **AI Analysis:** The Meta NLLB offline translations run and feed symptoms into Groq LLM (Llama 3), which instantly returns:
@@ -59,16 +55,12 @@ A highly intuitive, chat-based interface.
 
 
 ### 3. ASHA Worker Dashboard
-![ASHA Worker Dashboard](./docs/assets/asha-worker.png)
-
 * **Profile & Coverage:** ASHA workers register their assigned Village, Block, District, and Household coverage numbers.
 * **Case Entry:** While visiting a home, the ASHA worker inputs the patient's name, age, days sick, and symptoms. The integrated AI instantly recommends the safest triage result (e.g., Referral vs Home Care) directly from the field.
 
 
 
 ### 4. District Admin Master Dashboard
-![District Admin Dashboard](./docs/assets/district-admin.png)
-
 * **Worker Surveillance Matrix:** Real-time visibility into every ASHA worker's daily visits, submitted cases, and critical "Urgent" alerts across the district.
 * **Epidemiological Watchlist:** Tracks spikes in specific symptoms (like widespread fever/diarrhea in a specific block) enabling early warning systems for outbreaks (like Dengue or Cholera).
 * **Targeted Resource Deployment:** Enables Chief Medical Officers to deploy Mobile Medical Vans precisely where urgency metrics are spiking.
