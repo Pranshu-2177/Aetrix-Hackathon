@@ -1,11 +1,36 @@
+import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Shield, User, Stethoscope, ShieldCheck } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { type UserRole } from '@/hooks/use-auth';
+import { useAuth, type UserRole } from '@/hooks/use-auth';
 
 export default function LoginPage() {
   const navigate = useNavigate();
+  const { user, signOut } = useAuth();
+
+  const rolePath = useMemo(() => ({
+    patient: '/patients',
+    asha: '/asha-workers',
+    admin: '/district-admin',
+  }), []);
+
+  const handleRoleSelect = async (role: UserRole) => {
+    const currentRole = (user?.user_metadata?.role as UserRole | undefined) ?? null;
+
+    if (!user) {
+      navigate(`/auth?role=${role}`);
+      return;
+    }
+
+    if (currentRole === role) {
+      navigate(rolePath[role], { replace: true });
+      return;
+    }
+
+    await signOut();
+    navigate(`/auth?role=${role}`, { replace: true });
+  };
 
   const loginOptions = [
     {
@@ -66,7 +91,7 @@ export default function LoginPage() {
             </CardHeader>
             <CardContent className="mt-auto flex flex-col p-6 pt-2">
               <Button
-                onClick={() => navigate(`/auth?role=${option.role}`)}
+                onClick={() => void handleRoleSelect(option.role)}
                 className="w-full rounded-full gradient-cta text-accent-foreground hover:opacity-90"
               >
                 {option.buttonText}
