@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import type { User } from '@supabase/supabase-js';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Shield } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -161,13 +160,8 @@ export default function AuthPage() {
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-background p-4 sm:p-6 lg:p-8">
       <div className="mb-8 flex flex-col items-center gap-4 text-center">
-        <div className="flex h-14 w-14 items-center justify-center rounded-2xl gradient-cta shadow-teal">
-          <Shield className="h-8 w-8 text-accent-foreground" />
-        </div>
+        <img src="/swasthai-logo.svg" alt="SwasthAI" className="h-16 w-auto sm:h-20" />
         <div>
-          <h1 className="text-3xl font-extrabold tracking-tight text-foreground sm:text-4xl">
-            Swasth<span className="text-teal">AI</span>
-          </h1>
           <p className="mt-2 text-sm text-muted-foreground">Secure sign in for {ROLE_TITLES[role]}</p>
         </div>
       </div>

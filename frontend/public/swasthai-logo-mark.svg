@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="none">
+  <style>
+    .logo-navy { fill: var(--logo-navy, #1B3A5C); }
+    .logo-teal { fill: #2EBFA8; }
+    .logo-white { fill: var(--logo-white, #FFFFFF); stroke: var(--logo-white, #FFFFFF); }
+  </style>
+  <g transform="translate(5, 5)">
+    <path class="logo-teal" d="M45 0 L45 90 C45 90 5 75 5 40 L5 10 C5 7 7 5 10 5 L45 0Z" />
+    <path class="logo-navy" d="M45 0 L45 90 C45 90 85 75 85 40 L85 10 C85 7 83 5 80 5 L45 0Z" />
+
+    <rect class="logo-white" x="33" y="43" width="24" height="8" rx="1" stroke="none" />
+    <rect class="logo-white" x="41" y="35" width="8" height="24" rx="1" stroke="none" />
+
+    <polyline
+      class="logo-white"
+      points="15,25 30,25 35,13 40,33 45,20 50,27 55,25 75,25"
+      stroke-width="2.5"
+      fill="none"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    />
+
+    <circle cx="17" cy="50" r="3" fill="#5DDCC8"/>
+    <circle cx="13" cy="65" r="2.5" fill="#5DDCC8"/>
+    <circle cx="25" cy="60" r="2" fill="#5DDCC8"/>
+    <line x1="17" y1="50" x2="25" y2="60" stroke="#5DDCC8" stroke-width="1.2"/>
+    <line x1="13" y1="65" x2="25" y2="60" stroke="#5DDCC8" stroke-width="1.2"/>
+    <circle cx="20" cy="73" r="2" fill="#5DDCC8"/>
+    <line x1="13" y1="65" x2="20" y2="73" stroke="#5DDCC8" stroke-width="1.2"/>
+  </g>
+</svg>

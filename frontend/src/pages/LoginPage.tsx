@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Shield, User, Stethoscope, ShieldCheck } from 'lucide-react';
+import { User, Stethoscope, ShieldCheck } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useAuth, type UserRole } from '@/hooks/use-auth';
@@ -17,6 +17,11 @@ export default function LoginPage() {
 
   const handleRoleSelect = async (role: UserRole) => {
     const currentRole = (user?.user_metadata?.role as UserRole | undefined) ?? null;
+
+    if (role === 'patient') {
+      navigate('/patients');
+      return;
+    }
 
     if (!user) {
       navigate(`/auth?role=${role}`);
@@ -38,21 +43,21 @@ export default function LoginPage() {
       description: 'Get AI-driven health triage and support for you and your loved ones.',
       icon: <User className="h-8 w-8 text-teal" />,
       role: 'patient' as UserRole,
-      buttonText: 'Continue as Patient',
+      buttonText: 'Start Chat',
     },
     {
       title: 'ASHA Workers',
       description: 'Access tools for community health workers to triage and report cases.',
       icon: <Stethoscope className="h-8 w-8 text-teal" />,
       role: 'asha' as UserRole,
-      buttonText: 'Continue as ASHA Worker',
+      buttonText: 'Sign in as ASHA Worker',
     },
     {
       title: 'District Health Leads',
       description: 'See district-wide village trends, ASHA worker activity, and urgent referrals in one place.',
       icon: <ShieldCheck className="h-8 w-8 text-teal" />,
       role: 'admin' as UserRole,
-      buttonText: 'Continue as District Lead',
+      buttonText: 'Sign in as District Lead',
     },
   ];
 
@@ -60,13 +65,8 @@ export default function LoginPage() {
     <div className="flex min-h-screen flex-col items-center justify-center bg-background p-4 sm:p-6 lg:p-8">
       {/* Logo and Header */}
       <div className="mb-12 flex flex-col items-center gap-4 text-center">
-        <div className="flex h-16 w-16 items-center justify-center rounded-2xl gradient-cta shadow-teal">
-          <Shield className="h-10 w-10 text-accent-foreground" />
-        </div>
+        <img src="/swasthai-logo.svg" alt="SwasthAI" className="h-20 w-auto sm:h-24" />
         <div>
-          <h1 className="text-4xl font-extrabold tracking-tight text-foreground sm:text-5xl">
-            Swasth<span className="text-teal">AI</span>
-          </h1>
           <p className="mt-2 text-lg text-muted-foreground">
             Rural-first AI Health Triage & Support
           </p>

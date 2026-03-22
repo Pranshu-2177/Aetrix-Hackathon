@@ -26,7 +26,8 @@ export default function RequireAuth({
   }
 
   if (!user) {
-    return <Navigate to="/" state={{ from: location }} replace />;
+    const nextPath = allow?.length === 1 ? `/auth?role=${allow[0]}` : '/';
+    return <Navigate to={nextPath} state={{ from: location }} replace />;
   }
 
   const role = (user.user_metadata?.role as UserRole | undefined) ?? 'patient';
@@ -36,4 +37,3 @@ export default function RequireAuth({
 
   return children;
 }
-

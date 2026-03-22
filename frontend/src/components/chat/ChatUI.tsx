@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { MapPin, Shield } from 'lucide-react';
+import { MapPin } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 import AshaCaseForm from './AshaCaseForm';
 import MessageBubble from './MessageBubble';
@@ -206,12 +206,7 @@ export default function ChatUI({ embedded = false, initialWelcome, mode = 'patie
       {/* Header */}
       <div className="bg-navy px-4 py-3 flex items-center justify-between flex-shrink-0">
         <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-lg gradient-cta flex items-center justify-center">
-              <Shield className="w-3.5 h-3.5 text-accent-foreground" />
-            </div>
-            <span className="font-heading font-bold text-primary-foreground text-sm">SwasthAI</span>
-          </div>
+          <img src="/swasthai-logo-light.svg" alt="SwasthAI" className="h-8 w-auto md:h-9" />
         </div>
         <LanguageSelector value={language} onChange={setLanguage} />
       </div>

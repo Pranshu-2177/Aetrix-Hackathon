@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { Building2, ExternalLink, MapPin, Phone, Shield, Star } from 'lucide-react';
+import { Building2, ExternalLink, MapPin, Phone, Star } from 'lucide-react';
 import { UI_STRINGS, type FacilityInfo, type Language, type Message, type TriageData } from '@/lib/types';
 
 function TriageBadge({
@@ -60,9 +60,7 @@ export default function MessageBubble({ message }: { message: Message }) {
       className={`flex gap-2 ${isUser ? 'justify-end' : 'justify-start'}`}
     >
       {!isUser && (
-        <div className="w-7 h-7 rounded-lg gradient-cta flex-shrink-0 flex items-center justify-center mt-1">
-          <Shield className="w-3.5 h-3.5 text-accent-foreground" />
-        </div>
+        <img src="/swasthai-logo-mark.svg" alt="SwasthAI" className="mt-1 h-7 w-7 flex-shrink-0 rounded-lg" />
       )}
 
       <div className={`max-w-[75%] md:max-w-[70%] ${isUser
