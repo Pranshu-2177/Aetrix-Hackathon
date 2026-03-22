@@ -187,6 +187,55 @@ Backend:
 backend/venv/bin/python -m unittest backend.tests.test_analyze backend.tests.test_translator
 ```
 
+## Deploy
+
+Recommended deploy path:
+
+- frontend: Render Static Site
+- backend: Render Web Service
+
+Files prepared for deploy:
+
+- `render.yaml`
+- `backend/requirements-deploy.txt`
+
+Recommended flow:
+
+1. Push this repo to GitHub
+2. In Render, create a new Blueprint and point it to this repo
+3. Render will read `render.yaml` and create:
+   - `swasthai-api`
+   - `swasthai-web`
+4. Add the required env vars in Render
+5. Run the Supabase SQL files before using the live app
+
+Supabase SQL to run:
+
+- `backend/supabase_mvp_schema.sql`
+- `supabase/migrations/002_create_profiles_and_case_reports.sql`
+- `supabase/migrations/003_create_facilities.sql`
+
+Important:
+
+- deployment should use `backend/requirements-deploy.txt`, not the full local requirements file
+- `OFFLINE_TRANSLATION_ENABLED=false` is recommended for deploy, otherwise `torch` / `transformers` will make deploys much heavier
+- frontend must set `VITE_API_URL` to the deployed backend URL
+- `render.yaml` is already configured for the monorepo layout in this repo
+
+Backend env vars needed on Render:
+
+- `GROQ_API_KEY`
+- `SUPABASE_URL`
+- `SUPABASE_KEY`
+- optional: `GOOGLE_TRANSLATE_API_KEY`
+- optional: `GOOGLE_MAPS_API_KEY`
+
+Frontend env vars needed on Render:
+
+- `VITE_SUPABASE_URL`
+- `VITE_SUPABASE_ANON_KEY`
+- `VITE_API_URL`
+
 ## What Is Still Missing
 
 - real WhatsApp end-to-end bot flow

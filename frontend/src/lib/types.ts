@@ -21,6 +21,11 @@ export interface FacilityInfo {
   lng: number;
   distance_km: number;
   distance_text: string;
+  rating: number;
+  review_count: number;
+  match_reason: string;
+  formatted_address?: string | null;
+  maps_uri?: string | null;
   contact?: string | null;
   recommended_for: Array<'clinic' | 'emergency'>;
 }
@@ -50,7 +55,10 @@ export interface AnalyzeResponse {
   triage: 'self-care' | 'clinic' | 'emergency';
   reason: string;
   confidence: number;
+  triage_engine: 'groq' | 'fallback';
   recommended_actions: string[];
+  needs_more_info: boolean;
+  follow_up_questions: string[];
   facilities: FacilityInfo[];
   is_emergency: boolean;
   disclaimer: string;
@@ -90,9 +98,12 @@ export const UI_STRINGS: Record<Language, {
   clinicBadge: string;
   emergencyBadge: string;
   distanceLabel: string;
+  ratingLabel: string;
+  whySuggestedLabel: string;
   callLabel: string;
   directionsLabel: string;
   listening: string;
+  followUpPrompt: string;
 }> = {
   en: {
     welcome: 'Welcome to SwasthAI.\nTell us your problem by typing or speaking.\nIf you share location, we can also show a nearby place for care.',
@@ -110,9 +121,12 @@ export const UI_STRINGS: Record<Language, {
     clinicBadge: 'Go To Clinic',
     emergencyBadge: 'Emergency',
     distanceLabel: 'Distance',
+    ratingLabel: 'Rating',
+    whySuggestedLabel: 'Why this place',
     callLabel: 'Call',
     directionsLabel: 'Map',
     listening: 'Listening',
+    followUpPrompt: 'Please tell me:',
   },
   hi: {
     welcome: 'SwasthAI में आपका स्वागत है।\nअपनी परेशानी लिखकर या बोलकर बताइए।\nलोकेशन देने पर हम नजदीकी इलाज की जगह भी दिखा सकते हैं।',
@@ -130,9 +144,12 @@ export const UI_STRINGS: Record<Language, {
     clinicBadge: 'क्लिनिक जाएं',
     emergencyBadge: 'आपातकाल',
     distanceLabel: 'दूरी',
+    ratingLabel: 'रेटिंग',
+    whySuggestedLabel: 'यह जगह क्यों',
     callLabel: 'कॉल करें',
     directionsLabel: 'नक्शा',
     listening: 'सुन रहा है',
+    followUpPrompt: 'कृपया बताइए:',
   },
   gu: {
     welcome: 'SwasthAI માં આપનું સ્વાગત છે.\nતમારી તકલીફ લખીને અથવા બોલીને કહો.\nસ્થાન આપશો તો અમે નજીકની સારવારની જગ્યા પણ બતાવી શકીશું.',
@@ -150,9 +167,12 @@ export const UI_STRINGS: Record<Language, {
     clinicBadge: 'ક્લિનિક જાઓ',
     emergencyBadge: 'ઇમરજન્સી',
     distanceLabel: 'અંતર',
+    ratingLabel: 'રેટિંગ',
+    whySuggestedLabel: 'આ જગ્યા કેમ',
     callLabel: 'કૉલ',
     directionsLabel: 'નકશો',
     listening: 'સાંભળી રહ્યું છે',
+    followUpPrompt: 'કૃપા કરીને કહો:',
   },
   mr: {
     welcome: 'SwasthAI मध्ये आपले स्वागत आहे.\nतुमची अडचण लिहा किंवा बोलून सांगा.\nलोकेशन दिल्यास आम्ही जवळची उपचाराची जागा दाखवू शकतो.',
@@ -170,9 +190,12 @@ export const UI_STRINGS: Record<Language, {
     clinicBadge: 'क्लिनिकला जा',
     emergencyBadge: 'आपत्काल',
     distanceLabel: 'अंतर',
+    ratingLabel: 'रेटिंग',
+    whySuggestedLabel: 'ही जागा का',
     callLabel: 'कॉल',
     directionsLabel: 'नकाशा',
     listening: 'ऐकत आहे',
+    followUpPrompt: 'कृपया सांगा:',
   },
   ta: {
     welcome: 'SwasthAI-க்கு வரவேற்கிறோம்.\nஉங்கள் பிரச்சனையை எழுதி அல்லது பேசி சொல்லுங்கள்.\nஇருப்பிடம் பகிர்ந்தால் அருகிலுள்ள சிகிச்சை இடத்தையும் காட்டலாம்.',
@@ -190,9 +213,12 @@ export const UI_STRINGS: Record<Language, {
     clinicBadge: 'கிளினிக்கிற்கு செல்லவும்',
     emergencyBadge: 'அவசரம்',
     distanceLabel: 'தூரம்',
+    ratingLabel: 'மதிப்பீடு',
+    whySuggestedLabel: 'ஏன் இந்த இடம்',
     callLabel: 'அழைக்கவும்',
     directionsLabel: 'வரைபடம்',
     listening: 'கேட்கிறது',
+    followUpPrompt: 'தயவுசெய்து சொல்லுங்கள்:',
   },
 };
 

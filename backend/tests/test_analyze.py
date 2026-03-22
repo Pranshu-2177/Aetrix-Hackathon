@@ -15,6 +15,7 @@ class AnalyzeRouteTests(unittest.IsolatedAsyncioTestCase):
         )
 
         self.assertEqual(result.triage, "clinic")
+        self.assertIn(result.triage_engine, {"groq", "fallback"})
         self.assertFalse(result.is_emergency)
         self.assertTrue(result.session_id.startswith("session-"))
         self.assertEqual(result.language, "en")
@@ -32,6 +33,9 @@ class AnalyzeRouteTests(unittest.IsolatedAsyncioTestCase):
         self.assertTrue(result.is_emergency)
         self.assertEqual(result.language, "hi")
         self.assertGreater(len(result.facilities), 0)
+        self.assertLessEqual(len(result.facilities), 3)
+        self.assertGreaterEqual(result.facilities[0].rating, 0.0)
+        self.assertTrue(result.facilities[0].match_reason)
 
     def test_analyze_rejects_blank_text(self) -> None:
         with self.assertRaises(ValidationError):
@@ -44,3 +48,13 @@ class AnalyzeRouteTests(unittest.IsolatedAsyncioTestCase):
 
         self.assertEqual(result.triage, "clinic")
         self.assertEqual(result.language, "mr")
+
+    async def test_analyze_requests_more_info_for_greeting(self) -> None:
+        result = await analyze_symptoms(
+            AnalyzeRequest(text="hi", language="en")
+        )
+
+        self.assertTrue(result.needs_more_info)
+        self.assertEqual(result.triage_engine, "fallback")
+        self.assertEqual(result.recommended_actions, [])
+        self.assertGreater(len(result.follow_up_questions), 0)

@@ -1,19 +1,25 @@
 """
 SwasthAI — Database Service
-Supabase helpers for storing sessions, messages, triage results, and symptoms.
+Supabase helpers for storing sessions, messages, triage results, and facilities.
 Falls back silently when Supabase is not configured (local dev).
 """
 
 from __future__ import annotations
 
-from typing import Dict, Optional
+from typing import Dict, List, Optional
 
 from backend.config import settings
+
+_warned_missing_supabase = False
 
 
 def _get_client():
     """Get Supabase client. Returns None if not configured."""
+    global _warned_missing_supabase
     if not settings.has_supabase:
+        if not _warned_missing_supabase:
+            print("[Database] Supabase not configured; skipping database writes.")
+            _warned_missing_supabase = True
         return None
     try:
         from supabase import create_client
@@ -93,3 +99,24 @@ async def get_session(session_id: str) -> Optional[Dict]:
     except Exception as e:
         print(f"[Database] Error getting session: {e}")
         return None
+
+
+async def get_facilities(triage_level: Optional[str] = None) -> List[Dict]:
+    """Fetch active facilities from Supabase and optionally filter by triage level."""
+    client = _get_client()
+    if not client:
+        return []
+
+    try:
+        result = client.table("facilities").select("*").eq("is_active", True).execute()
+        facilities = result.data or []
+        if not triage_level or triage_level == "self-care":
+            return facilities
+        return [
+            facility
+            for facility in facilities
+            if triage_level in (facility.get("recommended_for") or [])
+        ]
+    except Exception as e:
+        print(f"[Database] Error getting facilities: {e}")
+        return []

@@ -93,38 +93,60 @@ export default function ChatUI({ embedded = false, initialWelcome, mode = 'patie
 
       const newMessages: Message[] = [];
 
-      newMessages.push({
-        id: crypto.randomUUID(),
-        role: 'bot',
-        type: 'triage',
-        content: resp.reason,
-        data: triageData,
-        language: responseLanguage,
-        timestamp: new Date(),
-      });
-
-      if (resp.recommended_actions.length) {
+      if (resp.needs_more_info) {
         newMessages.push({
           id: crypto.randomUUID(),
           role: 'bot',
-          type: 'actions',
-          content: responseUi.actionsTitle,
+          type: 'text',
+          content: resp.reason,
+          language: responseLanguage,
+          timestamp: new Date(),
+        });
+
+        if (resp.follow_up_questions.length) {
+          newMessages.push({
+            id: crypto.randomUUID(),
+            role: 'bot',
+            type: 'text',
+            content: `${responseUi.followUpPrompt}\n${resp.follow_up_questions.map((item, index) => `${index + 1}. ${item}`).join('\n')}`,
+            language: responseLanguage,
+            timestamp: new Date(),
+          });
+        }
+      } else {
+        newMessages.push({
+          id: crypto.randomUUID(),
+          role: 'bot',
+          type: 'triage',
+          content: resp.reason,
           data: triageData,
           language: responseLanguage,
           timestamp: new Date(),
         });
-      }
 
-      if (resp.facilities.length) {
-        newMessages.push({
-          id: crypto.randomUUID(),
-          role: 'bot',
-          type: 'facilities',
-          content: responseUi.facilitiesTitle,
-          data: resp.facilities,
-          language: responseLanguage,
-          timestamp: new Date(),
-        });
+        if (resp.recommended_actions.length) {
+          newMessages.push({
+            id: crypto.randomUUID(),
+            role: 'bot',
+            type: 'actions',
+            content: responseUi.actionsTitle,
+            data: triageData,
+            language: responseLanguage,
+            timestamp: new Date(),
+          });
+        }
+
+        if (resp.facilities.length) {
+          newMessages.push({
+            id: crypto.randomUUID(),
+            role: 'bot',
+            type: 'facilities',
+            content: responseUi.facilitiesTitle,
+            data: resp.facilities,
+            language: responseLanguage,
+            timestamp: new Date(),
+          });
+        }
       }
 
       if (resp.is_emergency) {

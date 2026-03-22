@@ -14,6 +14,11 @@ class FacilityInfo(BaseModel):
     lng: float = Field(..., description="Longitude")
     distance_km: float = Field(..., description="Distance from the user in kilometers")
     distance_text: str = Field(..., description="Human-readable distance string")
+    rating: float = Field(..., ge=0.0, le=5.0, description="Facility star rating")
+    review_count: int = Field(default=0, ge=0, description="Approximate number of ratings")
+    match_reason: str = Field(..., description="Short reason why this facility fits the case")
+    formatted_address: Optional[str] = Field(default=None, description="Readable address if available")
+    maps_uri: Optional[str] = Field(default=None, description="Direct Google Maps link if available")
     contact: Optional[str] = Field(default=None, description="Phone number if available")
     recommended_for: List[Literal["clinic", "emergency"]] = Field(
         default_factory=list,
@@ -31,9 +36,21 @@ class AnalyzeResponse(BaseModel):
     )
     reason: str = Field(..., description="Plain-language explanation of the triage result.")
     confidence: float = Field(..., ge=0.0, le=1.0, description="Confidence score between 0 and 1.")
+    triage_engine: Literal["groq", "fallback"] = Field(
+        default="fallback",
+        description="Shows whether the response came from Groq or the local fallback rules.",
+    )
     recommended_actions: List[str] = Field(
         default_factory=list,
         description="Immediate next steps the user should take.",
+    )
+    needs_more_info: bool = Field(
+        default=False,
+        description="True when more symptom details are needed before guidance.",
+    )
+    follow_up_questions: List[str] = Field(
+        default_factory=list,
+        description="Short follow-up questions when the message is too vague.",
     )
     facilities: List[FacilityInfo] = Field(
         default_factory=list,

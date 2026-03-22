@@ -50,7 +50,16 @@ async def run_pipeline(request: AnalyzeRequest) -> AnalyzeResponse:
             request.location.lat,
             request.location.lng,
             triage_level=triage_result["triage"],
+            symptom_text=normalized_text,
+            limit=3,
         )
+        if facilities:
+            localized_match_reasons = await translate_text_list(
+                [facility["match_reason"] for facility in facilities],
+                detected_language,
+            )
+            for facility, localized_reason in zip(facilities, localized_match_reasons):
+                facility["match_reason"] = localized_reason
 
     response = AnalyzeResponse(
         session_id=request.session_id,
@@ -59,7 +68,10 @@ async def run_pipeline(request: AnalyzeRequest) -> AnalyzeResponse:
         triage=triage_result["triage"],
         reason=localized_reason,
         confidence=triage_result["confidence"],
+        triage_engine=triage_result.get("triage_engine", "fallback"),
         recommended_actions=localized_actions,
+        needs_more_info=bool(triage_result.get("needs_more_info", False)),
+        follow_up_questions=await translate_text_list(triage_result.get("follow_up_questions", []), detected_language),
         facilities=facilities,
         is_emergency=triage_result["triage"] == "emergency",
         disclaimer=localized_disclaimer,

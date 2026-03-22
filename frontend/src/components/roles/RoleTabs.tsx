@@ -1,9 +1,11 @@
 import { Shield, LogOut } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
+import { useAuth } from '@/hooks/use-auth';
 
 export default function RoleTabs() {
   const navigate = useNavigate();
+  const { signOut } = useAuth();
 
   return (
     <header className="sticky top-0 z-40 border-b border-border bg-background/95 backdrop-blur">
@@ -25,7 +27,10 @@ export default function RoleTabs() {
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => navigate('/')}
+            onClick={async () => {
+              await signOut();
+              navigate('/');
+            }}
             className="rounded-full text-muted-foreground transition hover:bg-teal/10 hover:text-teal"
           >
             <LogOut className="mr-2 h-4 w-4" />

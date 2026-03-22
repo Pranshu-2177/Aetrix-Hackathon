@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { Building2, ExternalLink, MapPin, Phone, Shield } from 'lucide-react';
+import { Building2, ExternalLink, MapPin, Phone, Shield, Star } from 'lucide-react';
 import { UI_STRINGS, type FacilityInfo, type Language, type Message, type TriageData } from '@/lib/types';
 
 function TriageBadge({
@@ -37,6 +37,9 @@ function formatFacilityType(facilityType: FacilityInfo['facility_type']) {
 }
 
 function buildMapsLink(facility: FacilityInfo) {
+  if (facility.maps_uri) {
+    return facility.maps_uri;
+  }
   const destination = `${facility.lat},${facility.lng}`;
   return `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(destination)}`;
 }
@@ -107,6 +110,9 @@ export default function MessageBubble({ message }: { message: Message }) {
                       <p className="text-sm font-medium text-foreground">{facility.name}</p>
                     </div>
                     <p className="mt-1 text-xs text-muted-foreground">{formatFacilityType(facility.facility_type)}</p>
+                    {facility.formatted_address && (
+                      <p className="mt-1 text-xs text-muted-foreground">{facility.formatted_address}</p>
+                    )}
                   </div>
                 </div>
 
@@ -114,6 +120,10 @@ export default function MessageBubble({ message }: { message: Message }) {
                   <span className="flex items-center gap-1">
                     <MapPin className="h-3.5 w-3.5" />
                     {ui.distanceLabel}: {facility.distance_text}
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <Star className="h-3.5 w-3.5 fill-current text-amber-500" />
+                    {ui.ratingLabel}: {facility.rating.toFixed(1)}{facility.review_count ? ` (${facility.review_count})` : ''}
                   </span>
                   <a
                     href={buildMapsLink(facility)}
@@ -130,6 +140,11 @@ export default function MessageBubble({ message }: { message: Message }) {
                       {ui.callLabel}: {facility.contact}
                     </a>
                   )}
+                </div>
+
+                <div className="mt-3 rounded-lg bg-background/80 px-3 py-2">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">{ui.whySuggestedLabel}</p>
+                  <p className="mt-1 text-xs text-muted-foreground">{facility.match_reason}</p>
                 </div>
               </div>
             ))}

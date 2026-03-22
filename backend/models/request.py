@@ -45,8 +45,8 @@ class AnalyzeRequest(BaseModel):
         if value is None:
             return value
         cleaned = value.strip()
-        if len(cleaned) < 3:
-            raise ValueError("text must contain at least 3 non-space characters")
+        if len(cleaned) < 1:
+            raise ValueError("text must contain at least 1 non-space character")
         return cleaned
 
     @field_validator("voice_text")
@@ -55,8 +55,8 @@ class AnalyzeRequest(BaseModel):
         if value is None:
             return value
         cleaned = value.strip()
-        if len(cleaned) < 3:
-            raise ValueError("voice_text must contain at least 3 non-space characters")
+        if len(cleaned) < 1:
+            raise ValueError("voice_text must contain at least 1 non-space character")
         return cleaned
 
     @model_validator(mode="after")

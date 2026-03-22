@@ -16,6 +16,15 @@ app = FastAPI(
     version=settings.APP_VERSION,
 )
 
+@app.on_event("startup")
+async def startup_event():
+    """Pre-load the offline translator model at startup."""
+    from backend.services.translator import OfflineTranslator
+    # Run in a separate thread if possible, or just call it here
+    # Since it's a singleton, it won't block future calls
+    translator = OfflineTranslator.get_instance()
+    translator.initialize()
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.cors_origins,
@@ -36,9 +45,13 @@ async def health_check() -> dict:
         "status": "ok",
         "service": settings.APP_NAME,
         "version": settings.APP_VERSION,
-        "mode": "rule-based",
+        "mode": "groq-first-with-fallback" if settings.has_groq else "fallback-only",
+        "groq_configured": settings.has_groq,
+        "groq_model": settings.GROQ_MODEL if settings.has_groq else None,
         "deepgram_configured": settings.has_deepgram,
         "google_translate_configured": settings.has_google_translate,
+        "google_maps_configured": settings.has_google_maps,
+        "supabase_configured": settings.has_supabase,
     }
 
 

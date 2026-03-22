@@ -1,32 +1,48 @@
+import { useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Shield, User, Stethoscope, ShieldCheck } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { useAuth, type UserRole } from '@/hooks/use-auth';
 
 export default function LoginPage() {
   const navigate = useNavigate();
+  const { user, loading } = useAuth();
+
+  const rolePath = useMemo(() => ({
+    patient: '/patients',
+    asha: '/asha-workers',
+    admin: '/district-admin',
+  }), []);
+
+  useEffect(() => {
+    if (!loading && user) {
+      const role = (user.user_metadata?.role as UserRole | undefined) ?? 'patient';
+      navigate(rolePath[role], { replace: true });
+    }
+  }, [user, loading, navigate, rolePath]);
 
   const loginOptions = [
     {
       title: 'Patients & Families',
       description: 'Get AI-driven health triage and support for you and your loved ones.',
       icon: <User className="h-8 w-8 text-teal" />,
-      path: '/patients',
-      buttonText: 'Login as Patient',
+      role: 'patient' as UserRole,
+      buttonText: 'Continue as Patient',
     },
     {
       title: 'ASHA Workers',
       description: 'Access tools for community health workers to triage and report cases.',
       icon: <Stethoscope className="h-8 w-8 text-teal" />,
-      path: '/asha-workers',
-      buttonText: 'Login as ASHA Worker',
+      role: 'asha' as UserRole,
+      buttonText: 'Continue as ASHA Worker',
     },
     {
-      title: 'District Admins',
-      description: 'Monitor health trends and manage healthcare resources in your district.',
+      title: 'District Health Leads',
+      description: 'See district-wide village trends, ASHA worker activity, and urgent referrals in one place.',
       icon: <ShieldCheck className="h-8 w-8 text-teal" />,
-      path: '/district-admin',
-      buttonText: 'Login as Admin',
+      role: 'admin' as UserRole,
+      buttonText: 'Continue as District Lead',
     },
   ];
 
@@ -47,10 +63,13 @@ export default function LoginPage() {
         </div>
       </div>
 
-      {/* Login Options Grid */}
+      {/* Role Selection */}
       <div className="grid w-full max-w-5xl gap-6 md:grid-cols-3">
         {loginOptions.map((option) => (
-          <Card key={option.path} className="flex flex-col border-border transition-all hover:border-teal/50 hover:shadow-teal/10">
+          <Card
+            key={option.role}
+            className="flex flex-col border-border transition-all hover:border-teal/50 hover:shadow-teal/10"
+          >
             <CardHeader className="flex flex-col items-center gap-4 pb-2">
               <div className="flex h-16 w-16 items-center justify-center rounded-full bg-teal/10">
                 {option.icon}
@@ -61,8 +80,8 @@ export default function LoginPage() {
               </CardDescription>
             </CardHeader>
             <CardContent className="mt-auto flex flex-col p-6 pt-2">
-              <Button 
-                onClick={() => navigate(option.path)}
+              <Button
+                onClick={() => navigate(`/auth?role=${option.role}`)}
                 className="w-full rounded-full gradient-cta text-accent-foreground hover:opacity-90"
               >
                 {option.buttonText}

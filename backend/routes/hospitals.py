@@ -20,9 +20,10 @@ async def get_nearby_facilities(
     lat: float = Query(..., description="User latitude"),
     lng: float = Query(..., description="User longitude"),
     triage: str = Query("clinic", description="self-care, clinic, or emergency"),
-    limit: int = Query(5, description="Number of hospitals to return", ge=1, le=20)
+    symptoms: str | None = Query(default=None, description="Optional symptom text to improve facility ranking"),
+    limit: int = Query(3, description="Number of hospitals to return", ge=1, le=20)
 ):
     """
     Returns the nearest recommended facilities for the user's triage level.
     """
-    return await find_nearest_facilities(lat, lng, triage_level=triage, limit=limit)
+    return await find_nearest_facilities(lat, lng, triage_level=triage, limit=limit, symptom_text=symptoms)
